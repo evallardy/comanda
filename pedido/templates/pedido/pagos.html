@@ -1,0 +1,163 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% block headJS %}
+<!--  <meta http-equiv="refresh" content="10">  -->
+{% endblock %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block contenido %}
+<style>
+    .no-border {
+        border: none;
+        /* Opcionalmente, puedes añadir otros estilos para mejorar la apariencia */
+        outline: none;
+        /* Elimina el contorno al enfocar el campo */
+        box-shadow: none;
+        /* Elimina cualquier sombra */
+        font-size: 14px;
+    }
+</style>
+<form>
+    <div class="row d-flex justify-content-center" style="padding-top: 25px;">
+        <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+            <a href="{% url 'servicio' %}" class="btn btn-info cuadro-boton">Regresar</a>
+        </div>
+    </div>
+    <div class="row d-flex justify-content-center" style="padding-top: 25px; font-size: 20px; font-weight: bold;">
+        <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+            Total<br>
+            <input type="text" id="total_pago" readonly class="text-center no-border col-7" style="font-size: 20px; font-weight: bold; box-shadow: 0 0 10px #000;
+                border-radius: 10px;" value="{{total_importe}}">
+        </div>
+        <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+            Pago a Realizar
+            <input type="text" id="total_importe" readonly class="text-center no-border col-7" style="font-size: 20px; font-weight: bold; box-shadow: 0 0 10px #000;
+                border-radius: 10px;">
+            <button type="button" class="btn btn-info" title="Paga" id="btnEnviar">
+                <img src="{% static 'core/img/pago.svg' %}" width="20" height="20" />
+            </button>
+        </div>
+    </div>
+    <div class="col-12 col-xs-12 col-sm-12 col-md-10 col-lg-10 col-xl-8 col-xxl-7">
+        <div>
+            <table class="table cuadro caption-top">
+                <caption>
+                    <h3>Comanda mesa </h3>
+                </caption>
+                <thead>
+                    <tr class="text-center">
+                        <th class="col-4">
+                            Producto
+                        </th>
+                        <th class="col-2">
+                            Cantidad
+                        </th>
+                        <th class="col-2">
+                            Precio
+                        </th>
+                        <th class="col-2">
+                            Importe
+                        </th>
+                        <th class="col-2 align-middle">
+                            Paga <input type="checkbox" id="id_selecciona" name="selecciona">
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mesa in pagos %}
+                    <tr>
+                        <td>
+                            {{mesa.nom_producto}}
+                        </td>
+                        <td class="text-center">
+                            {{mesa.cantidad}}
+                        </td>
+                        <td class="text-end">
+                            {{mesa.precio_unitario}}
+                        </td>
+                        <td class="text-end">
+                            <input type="text" class="form-control text-end no-border" value="{{mesa.importe}}" readonly
+                                name="importe_{{mesa.id}}" id="id_importe_{{mesa.id}}" style="padding: 0;">
+                        </td>
+                        <td class="text-center">
+                            {% if mesa.estatus == 1 %}
+                            Solicitado
+                            {% elif mesa.estatus == 2 %}
+                            Elaborado
+                            {% elif mesa.estatus == 3 %}
+                            <input type="checkbox" id="id_pago_{{mesa.id}}" name="pago_{{mesa.id}}"
+                                class="checkbox-pago">
+                            {% else %}
+                            Pagado
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</form>
+<script>
+    $(document).ready(function () {
+        $(".checkbox-pago").change(function () {
+            var totalImporte = 0;
+            $(".checkbox-pago:checked").each(function () {
+                var id = $(this).attr("id").split("_")[2];
+                var importe = parseFloat($("#id_importe_" + id).val());
+                totalImporte += importe;
+            });
+            $("#total_importe").val(totalImporte.toFixed(2)); // Aquí se actualiza el campo de total importe
+
+            // Verificar si todos los checkboxes están marcados
+            var todosMarcados = checkboxesPagos.length === checkboxesPagos.filter(":checked").length;
+            $('#id_selecciona').prop('checked', todosMarcados);
+        });
+
+        var checkboxesPagos = $('input[type="checkbox"][id^="id_pago_"]');
+
+        // Evento change en el checkbox principal
+        $('#id_selecciona').on('change', function () {
+            var isChecked = $(this).prop('checked');
+
+            // Marcar o desmarcar todos los checkboxes de los pagos
+            checkboxesPagos.prop('checked', isChecked).change();
+        });
+        $('#btnEnviar').click(function () {
+            var datos = [];
+            $('.checkbox-pago:checked').each(function () {
+                var id = $(this).attr('id');
+                var valor = $(this).prop('checked') ? 'on' : 'off';
+
+                if (valor == 'on') {
+                    datos.push({
+                        id: id,
+                        valor: valor
+                    });
+                }
+            });
+
+            // Enviar los datos al servidor mediante una solicitud AJAX
+            $.ajax({
+                url: '{% url "pago_productos" %}',
+                type: 'POST',
+                data: {
+                    datos: JSON.stringify(datos),
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function (response) {
+                    location.reload();   
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        });
+    });
+
+</script>
+{% endblock %}

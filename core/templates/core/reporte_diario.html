@@ -1,0 +1,55 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block contenido %}
+<div class="row d-flex justify-content-center">
+    <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+        <h2 class="cuadro">Reporte diario</h2>
+    </div>
+</div>
+<div class="container cuadro col-8 col-xs-7 col-sm-7 col-md-7 col-lg-6 col-xl-5 col-xxl-4">
+    <div class="row d-flex justify-content-around">
+        <a href="{% url 'consultas'  %}" class="btn btn-info cuadro-boton col-5">Regresar</a>
+    </div>
+    <hr>
+    <div class="d-flex justify-content-center">
+        <table class="table table-striped col-10" style="border-color: blue">
+            <thead>
+                <tr>
+                    <th class="text-center col-4">Area</th>
+                    <th class="text-center col-4">Por cobrar</th>
+                    <th class="text-center col-4">Cobrado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for etapa in reporte_diario %}
+                <tr>
+                    <td class="col-5">Cocina</td>
+                    <td class="text-end col-2">{{ etapa.importe_por_cobrar_cocina|default_if_none:"0" }}</td>
+                    <td class="text-end col-2">{{ etapa.importe_pagados_cocina|default_if_none:"0" }}</td>
+                </tr>
+                <tr>
+                    <td>Bar</td>
+                    <td class="text-end">{{ etapa.importe_por_cobrar_bar|default_if_none:"0" }}</td>
+                    <td class="text-end">{{ etapa.importe_pagados_bar|default_if_none:"0" }}</td>
+                </tr>
+                <tr>
+                    <td>Total</td>
+                    <td class="text-end">{{ etapa.importe_por_cobrar|default_if_none:"0" }}</td>
+                    <td class="text-end">{{ etapa.importe_pagados|default_if_none:"0" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <hr style="border-color: darkblue; border-width: 2px;">
+    <div class="row d-flex justify-content-around">
+        <a href="{% url 'consultas'  %}" class="btn btn-info cuadro-boton col-5">Regresar</a>
+    </div>
+</div>
+{% endblock %}

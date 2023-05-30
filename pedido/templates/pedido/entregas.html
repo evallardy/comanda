@@ -1,0 +1,58 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block headJS %}
+<meta http-equiv="refresh" content="10">
+{% endblock %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block contenido %}
+<div class="d-flex justify-content-center">
+  <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+    <h2 class="cuadro">Para entregar</h2>
+  </div>
+</div>
+<div class="d-flex justify-content-center">
+  <div class="cuadro col-12 col-xs-11 col-sm-10 col-md-10 col-lg-9 col-xl-8 col-xxl-8">
+    <table class="table table-striped caption-top col-12" id="tabla-bar">
+      <caption>
+        <h3>Comandas</h3>
+      </caption>
+      <thead>
+        <tr class="text-center">
+          <th class="col-1">Mesa</th>
+          <th class="col-3">Producto</th>
+          <th class="col-1">Cant.</th>
+          <th class="col-5">Especificación</th>
+          <th class="col-1"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for producto in entregas %}
+        <tr class="text-center">
+          <td>{{producto.comanda.mesa}}</td>
+          <td>{{producto.nom_producto}}</td>
+          <td>{{producto.cantidad}}</td>
+          <td class="text-start">
+            {% for insumo in producto.especificacion1 %}
+            <strong>{{ insumo.insumo }}</strong> : {{ insumo.cantidad }}<br>
+            {% endfor %}
+          </td>
+          <td>
+            <a href="{% url 'termina' producto.id 'entregas' %}" class="btn btn-info" title="Entregada">
+              <img src="{% static 'core/img/atendida.svg' %}" width="20" />
+            </a>
+            <a href="{% url 'cancela_elaborado' producto.id 'entregas' %}" class="btn btn-danger" title="Cancela entrega">
+              <img src="{% static 'core/img/cancelar.svg' %}" width="20" />
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

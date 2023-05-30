@@ -1,0 +1,111 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block contenido %}
+{% if user.is_authenticated %}
+<div class="row d-flex justify-content-center">
+    <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+        <h2 class="cuadro">Producto</h2>
+    </div>
+</div>
+{% endif %}
+<div class="row text-center">
+    <h4 style="color: rgb(11, 125, 231);">{{accion}}</h4>
+    <div class="row d-flex justify-content-around">
+        <button type="submit" class="btn btn-info cuadro-boton col-5">Guarda</button>
+        <a href="{% url 'producto_list' %}" class="btn btn-info cuadro-boton col-5">Regresar</a>
+    </div>
+    <hr>
+    <div class="container cuadro col-10 col-xs-9 col-sm-9 col-md-9 col-lg-8 col-xl-7 col-xxl-6">
+        <form method="POST" class="row g-3">
+            {% csrf_token %}
+            <div class="col-12">
+                {{form.nombre|as_crispy_field}}
+            </div>
+            <div class="col-6">
+                {{form.tipo|as_crispy_field}}
+            </div>
+            <div class="col-6">
+                {{form.precio|as_crispy_field}}
+            </div>
+            <div class="col-4">
+                {{form.estatus|as_crispy_field}}
+            </div>
+            <div class="col-4" hidden>
+                {{form.ingredientes|as_crispy_field}}
+            </div>
+            <hr>
+            <div class="row">
+                <div class="container col-12 col-xs-11 col-sm-11 col-md-11 col-lg-10 col-xl-9 col-xxl-9">
+                    <h3>Ingrediente</h3>
+                    <input type="text" class="form-control" id="id_ing_1" name="ing_1" style="margin-bottom: 5px;"
+                        onkeyup="conca_ingredientes()">
+                    <input type="text" class="form-control" id="id_ing_2" name="ing_2" style="margin-bottom: 5px;"
+                        onkeyup="conca_ingredientes()">
+                    <input type="text" class="form-control" id="id_ing_3" name="ing_3" style="margin-bottom: 5px;"
+                        onkeyup="conca_ingredientes()">
+                    <input type="text" class="form-control" id="id_ing_4" name="ing_4" style="margin-bottom: 5px;"
+                        onkeyup="conca_ingredientes()">
+                    <input type="text" class="form-control" id="id_ing_5" name="ing_5" style="margin-bottom: 5px;"
+                        onkeyup="conca_ingredientes()">
+                    <input type="text" class="form-control" id="id_ing_6" name="ing_6" style="margin-bottom: 5px;"
+                        onkeyup="conca_ingredientes()">
+                    <input type="text" class="form-control" id="id_ing_7" name="ing_7" style="margin-bottom: 5px;"
+                        onkeyup="conca_ingredientes()">
+                    <input type="text" class="form-control" id="id_ing_8" name="ing_8" style="margin-bottom: 5px;"
+                        onkeyup="conca_ingredientes()">
+                    <input type="text" class="form-control" id="id_ing_9" name="ing_9" style="margin-bottom: 5px;"
+                        onkeyup="conca_ingredientes()">
+                    <input type="text" class="form-control" id="id_ing_10" name="ing_10" style="margin-bottom: 5px;"
+                        onkeyup="conca_ingredientes()">
+                </div>
+            </div>
+            <hr>
+            <div class="row d-flex justify-content-around">
+                <button type="submit" class="btn btn-info cuadro-boton col-5">Guarda</button>
+                <a href="{% url 'producto_list' %}" class="btn btn-info cuadro-boton col-5">Regresar</a>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    var accion = "{{accion}}";
+    $('#id_precio').on('focusout', function () {
+        reformatear('id_precio');
+    });
+    $('#id_precio').on('keypress', function (event) {
+        return valideKey(event);
+    });
+    function conca_ingredientes() {
+        $("#id_ingredientes").val('');
+        var ingredientes = [];
+
+        for (var i = 1; i <= 10; i++) {
+            var inputVal = document.getElementById('id_ing_' + i).value;
+            if (inputVal) {
+                ingredientes.push(inputVal);
+            }
+        }
+
+        var ingredientesJSON = JSON.stringify(ingredientes);
+        $("#id_ingredientes").val(ingredientesJSON);
+    }
+    $(document).ready(function () {
+        $("#id_precio").css("text-align", "right");
+        if (accion == "Modificación") {
+            var arregloIngredientes = "{{ producto.ingredientes|safe }}";
+            var ingredientes = JSON.parse(arregloIngredientes.replace(/'/g, '"'));
+
+            for (var i = 0; i < ingredientes.length; i++) {
+                var campo = $('#id_ing_' + (i + 1));
+                campo.val(ingredientes[i]);
+            }
+        }
+    });
+</script>
+{% endblock %}
