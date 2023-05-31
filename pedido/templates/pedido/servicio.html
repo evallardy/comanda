@@ -43,9 +43,15 @@
                 {% for mesa in servicio %}
                 <tr>
                     <td class="text-center">
-                        <a href="{% url 'comanda_surte' mesa.mesa mesa.observacion mesa.id %}" class="btn btn-info cuadro-boton" title="Detalle de la mesa {{mesa.mesa}}">
+                        {% if mesa.observacion == '' %}
+                        <a href="{% url 'comanda_surte' mesa.mesa  mesa.id %}" class="btn btn-info cuadro-boton" title="Detalle de la mesa {{mesa.mesa}}">
                             {{ mesa.mesa}}
                         </a>
+                        {% else %}
+                        <a href="{% url 'comanda_surte' mesa.mesa  mesa.id mesa.observacion %}" class="btn btn-info cuadro-boton" title="Detalle de la mesa {{mesa.mesa}}">
+                            {{ mesa.mesa}}
+                        </a>
+                        {% endif %}
                     </td>
                     <td class="align-bottom" style="font-size: large;">
                         {{ mesa.observacion}}
