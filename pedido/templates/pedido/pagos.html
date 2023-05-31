@@ -85,9 +85,9 @@
                         </td>
                         <td class="text-center">
                             {% if mesa.estatus == 1 %}
-                            Solicitado
+                            Elaborando
                             {% elif mesa.estatus == 2 %}
-                            Elaborado
+                            Por entregar
                             {% elif mesa.estatus == 3 %}
                             <input type="checkbox" id="id_pago_{{mesa.id}}" name="pago_{{mesa.id}}"
                                 class="checkbox-pago">
