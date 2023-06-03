@@ -33,14 +33,6 @@
             <input type="text" id="total_pago" readonly class="text-center no-border col-7" style="font-size: 20px; font-weight: bold; box-shadow: 0 0 10px #000;
                 border-radius: 10px;" value="{{total_importe}}">
         </div>
-        <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
-            Pago a Realizar
-            <input type="text" id="total_importe" readonly class="text-center no-border col-7" style="font-size: 20px; font-weight: bold; box-shadow: 0 0 10px #000;
-                border-radius: 10px;">
-            <button type="button" class="btn btn-info" title="Paga" id="btnEnviar">
-                <img src="{% static 'core/img/pago.svg' %}" width="20" height="20" />
-            </button>
-        </div>
     </div>
     <div class="d-flex justify-content-center">
         <div class="col-11 col-xs-11 col-sm-11 col-md-9 col-lg-9 col-xl-7 col-xxl-6">
@@ -63,7 +55,7 @@
                             Importe
                         </th>
                         <th class="col-2 align-middle">
-                            Paga <input type="checkbox" id="id_selecciona" name="selecciona">
+                            Estatus
                         </th>
                     </tr>
                 </thead>
@@ -89,8 +81,7 @@
                             {% elif mesa.estatus == 2 %}
                             Por entregar
                             {% elif mesa.estatus == 3 %}
-                            <input type="checkbox" id="id_pago_{{mesa.id}}" name="pago_{{mesa.id}}"
-                                class="checkbox-pago">
+                            Por pagar
                             {% else %}
                             Pagado
                             {% endif %}
@@ -102,62 +93,4 @@
         </div>
     </div>
 </form>
-<script>
-    $(document).ready(function () {
-        $(".checkbox-pago").change(function () {
-            var totalImporte = 0;
-            $(".checkbox-pago:checked").each(function () {
-                var id = $(this).attr("id").split("_")[2];
-                var importe = parseFloat($("#id_importe_" + id).val());
-                totalImporte += importe;
-            });
-            $("#total_importe").val(totalImporte.toFixed(2)); // Aquí se actualiza el campo de total importe
-
-            // Verificar si todos los checkboxes están marcados
-            var todosMarcados = checkboxesPagos.length === checkboxesPagos.filter(":checked").length;
-            $('#id_selecciona').prop('checked', todosMarcados);
-        });
-
-        var checkboxesPagos = $('input[type="checkbox"][id^="id_pago_"]');
-
-        // Evento change en el checkbox principal
-        $('#id_selecciona').on('change', function () {
-            var isChecked = $(this).prop('checked');
-
-            // Marcar o desmarcar todos los checkboxes de los pagos
-            checkboxesPagos.prop('checked', isChecked).change();
-        });
-        $('#btnEnviar').click(function () {
-            var datos = [];
-            $('.checkbox-pago:checked').each(function () {
-                var id = $(this).attr('id');
-                var valor = $(this).prop('checked') ? 'on' : 'off';
-
-                if (valor == 'on') {
-                    datos.push({
-                        id: id,
-                        valor: valor
-                    });
-                }
-            });
-
-            // Enviar los datos al servidor mediante una solicitud AJAX
-            $.ajax({
-                url: '{% url "pago_productos" %}',
-                type: 'POST',
-                data: {
-                    datos: JSON.stringify(datos),
-                    csrfmiddlewaretoken: '{{ csrf_token }}'
-                },
-                success: function (response) {
-                    location.reload();
-                },
-                error: function (xhr, status, error) {
-                    console.error(error);
-                }
-            });
-        });
-    });
-
-</script>
 {% endblock %}

@@ -7,16 +7,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 class Usuario(AbstractUser):
+    celular = models.CharField(max_length=20, blank=True, null=True)
+    
     class Meta:
         db_table = 'Usuario'
-
-        permissions = (
-    # Cambio contraseña
-            ('cambio_contrasena', 'Cambio de contraseña'),
-            ('servicio_bar', 'Servicio de bar'),
-            ('servicio_cocina', 'Servicio de cocina'),
-            ('servicio_atencion', 'Servicio de atención'),
-            ('catalogos', 'Catálogos'),
-            ('usuarios', 'Usuarios'),
-            ('reportes_ejecutivos', 'Reportes ejecutivos'),
-        )   

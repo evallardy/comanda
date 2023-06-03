@@ -22,6 +22,8 @@ urlpatterns = [
     path('reasigna/<id>/<comanda>/', reasigna, name='reasigna'),
     path('reasigna_act/', reasigna_act, name='reasigna_act'),
     path('pagos/<str:pk>/', pagos.as_view(), name='pagos'),
+    path('comanda_ver/<str:pk>/', comanda_ver.as_view(), name='comanda_ver'),
     path('pago_productos/', pago_productos, name='pago_productos'),
-    
+    path('cancela_comanda/<pk>/', cancela_comanda, name='cancela_comanda'),
+    path('cierra_comanda/<pk>/', cierra_comanda, name='cierra_comanda'),
 ]

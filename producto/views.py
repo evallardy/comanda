@@ -13,6 +13,13 @@ class producto_list(ListView):
     def get_queryset(self):
         queryset = Producto.objects.filter(estatus=1)
         return queryset
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['catalogo_perm'] = self.request.user.has_perm('core.catalogo')
+        context['catalogo_agregar_perm'] = self.request.user.has_perm('core.catalogo_agregar')
+        context['catalogo_modificar_perm'] = self.request.user.has_perm('core.catalogo_modificar')
+        return context
+
 
 class crea_producto(CreateView):
     model = Producto
@@ -22,6 +29,7 @@ class crea_producto(CreateView):
     context_object_name = 'producto'
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['catalogo_agregar_perm'] = self.request.user.has_perm('core.catalogo_agregar')
         context['accion'] = 'Alta'
         return context
 
@@ -33,5 +41,6 @@ class mod_producto(UpdateView):
     context_object_name = 'producto'
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['catalogo_modificar_perm'] = self.request.user.has_perm('core.catalogo_modificar')
         context['accion'] = 'Modificación'
         return context

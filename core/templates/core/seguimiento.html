@@ -18,7 +18,10 @@
     </div>
     <hr>
     <div class="d-flex justify-content-center">
-        <table class="table table-striped col-10" style="border-color: blue">
+        <table class="table table-striped col-10 caption-top" style="border-color: blue">
+            <caption>
+                <h3>Total de productos - {{ seguimiento.total_comandas }}</h3>
+            </caption>
             <thead>
                 <tr>
                     <th class="text-center">Etapa</th>
@@ -27,28 +30,26 @@
                 </tr>
             </thead>
             <tbody>
-                {% for etapa in seguimiento %}
                 <tr>
                     <td class="col-5">Por elaborar</td>
-                    <td class="text-center col-2">{{ etapa.cantidad_por_elaborar_bar }}</td>
-                    <td class="text-center col-2">{{ etapa.cantidad_por_elaborar_cocina }}</td>
+                    <td class="text-center col-2">{{ seguimiento.total_por_elaborar_bar|default_if_none:"0" }}</td>
+                    <td class="text-center col-2">{{ seguimiento.total_por_elaborar_cocina|default_if_none:"0" }}</td>
                 </tr>
                 <tr>
                     <td>Por entregar</td>
-                    <td class="text-center">{{ etapa.cantidad_por_entregar_bar }}</td>
-                    <td class="text-center">{{ etapa.cantidad_por_entregar_cocina }}</td>
+                    <td class="text-center">{{ seguimiento.total_por_entregar_bar|default_if_none:"0" }}</td>
+                    <td class="text-center">{{ seguimiento.total_por_entregar_cocina|default_if_none:"0" }}</td>
                 </tr>
                 <tr>
                     <td>Por reasignar</td>
-                    <td class="text-center">{{ etapa.cantidad_por_reasignar_bar }}</td>
-                    <td class="text-center">{{ etapa.cantidad_por_reasignar_bar }}</td>
+                    <td class="text-center">{{ seguimiento.total_por_reasignar_bar|default_if_none:"0" }}</td>
+                    <td class="text-center">{{ seguimiento.total_por_reasignar_cocina|default_if_none:"0" }}</td>
                 </tr>
                 <tr>
                     <td>Cancelados</td>
-                    <td class="text-center">{{ etapa.cantidad_cancelados_bar }}</td>
-                    <td class="text-center">{{ etapa.cantidad_cancelados_cocina }}</td>
+                    <td class="text-center">{{ seguimiento.total_cancelados_bar|default_if_none:"0" }}</td>
+                    <td class="text-center">{{ seguimiento.total_cancelados_cocina|default_if_none:"0" }}</td>
                 </tr>
-                {% endfor %}
             </tbody>
         </table>
     </div>
@@ -61,16 +62,14 @@
                 </tr>
             </thead>
             <tbody>
-                {% for etapa in seguimiento %}
                 <tr>
                     <td>Por cobrar</td>
-                    <td class="text-center">{{ etapa.cantidad_por_cobrar }}</td>
+                    <td class="text-center">{{ seguimiento.total_por_cobrar|default_if_none:"0"  }}</td>
                 </tr>
                 <tr>
                     <td>Pagados</td>
-                    <td class="text-center">{{ etapa.cantidad_pagados }}</td>
+                    <td class="text-center">{{ seguimiento.total_pagados|default_if_none:"0"  }}</td>
                 </tr>
-                {% endfor %}
             </tbody>
         </table>
     </div>

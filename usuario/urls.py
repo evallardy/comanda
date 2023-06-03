@@ -1,8 +1,10 @@
-from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
 
-from core.views import index
+from .views import *
 
 urlpatterns = [
-    
+     path('usuarios/', usuarios.as_view(), name='usuarios'),
+     path('registro/', registro, name='registro'),
+     path('mod_usuario/<pk>/', UserUpdateView.as_view(), name='mod_usuario'),
+     
 ]

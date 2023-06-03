@@ -13,53 +13,80 @@
         <h2 class="cuadro">Actividades</h2>
     </div>
 </div>
-{% endif %}
-{{context}}
 <div class="container">
-    {% if user.is_authenticated %}
     {% if contable == '' %}
+    {% if abrir_perm %}
     <div class="row d-flex justify-content-around" style="padding: 20px;">
         <a type="button" class="btn btn-info col-3 cuadro-boton" style="font-size: x-large; padding: 15px 0 15px 0; "
             href="{% url 'abre_dia' %}">
             ABRE DÍA
         </a>
     </div>
+    {% endif %}
     {% else %}
     <div class="row d-flex justify-content-around" style="padding: 20px;">
+        {% if cocina_perm %}
         <a type="button" class="btn btn-info col-3 cuadro-boton" style="font-size: x-large; padding: 15px 0 15px 0; "
             href="{% url 'cocina' %}">
             COCINA
         </a>
+        {% endif %}
+        {% if bar_perm %}
         <a type="button" class="btn btn-info col-3 cuadro-boton" style="font-size: x-large; padding: 15px 0 15px 0;"
             href="{% url 'bar' %}">
             BAR
         </a>
+        {% endif %}
+        {% if servicio_perm %}
         <a type="button" class="btn btn-info col-4 cuadro-boton" style="font-size: x-large; padding: 15px 0 15px 0;"
             href="{% url 'servicio' %}">
             SERVICIO
         </a>
+        {% endif %}
+        {% if entregas_perm %}
         <a type="button" class="btn btn-info col-4 cuadro-boton" style="font-size: x-large; padding: 15px 0 15px 0;"
             href="{% url 'entregas' %}">
             ENTREGAS
         </a>
+        {% endif %}
+        {% if reasignar_perm %}
         <a type="button" class="btn btn-info col-5 cuadro-boton" style="font-size: x-large; padding: 15px 0 15px 0;"
             href="{% url 'reasignar' %}">
             REASIGNAR
         </a>
+        {% endif %}
+        {% if consultas_seguimiento_perm or consultas_reporte_dia_perm %}
         <a type="button" class="btn btn-info col-4 cuadro-boton" style="font-size: x-large; padding: 15px 0 15px 0;"
             href="{% url 'consultas' %}">
             CONSULTAS
         </a>
+        {% endif %}
+        {% if catalogo_perm %}
         <a type="button" class="btn btn-info col-5 cuadro-boton" style="font-size: x-large; padding: 15px 0 15px 0;"
             href="{% url 'producto_list' %}">
             CATÁLOGO
         </a>
+        {% endif %}
+        {% if usuarios_perm %}
+        <a type="button" class="btn btn-info col-5 cuadro-boton" style="font-size: x-large; padding: 15px 0 15px 0;"
+            href="{% url 'usuarios' %}">
+            USUARIOS
+        </a>
+        {% endif %}
+        {% if accesos_perm %}
+        <a type="button" class="btn btn-info col-5 cuadro-boton" style="font-size: x-large; padding: 15px 0 15px 0;"
+            href="{% url 'permisos_usuario' %}">
+            ACCESOS
+        </a>
+        {% endif %}
+        {% if cerrar_perm %}
         <a type="button" class="btn btn-info col-5 cuadro-boton" style="font-size: x-large; padding: 15px 0 15px 0;"
             href="{% url 'cierra_dia' %}">
             CIERRA DIA
         </a>
+        {% endif %}
     </div>
     {% endif %}
-    {% endif %}
 </div>
+{% endif %}
 {% endblock %}

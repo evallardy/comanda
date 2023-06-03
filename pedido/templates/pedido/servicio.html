@@ -10,13 +10,17 @@
 {% bootstrap_javascript jquery='full' %}
 {% endblock %}
 {% block contenido %}
-{% if user.is_authenticated %}
+{% if user.is_authenticated and servicio_perm %}
 <div class="row d-flex justify-content-center" style="padding-top: 25px;">
+    {% if servicio_nueva_perm %}
     <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
         <a href="{% url 'comanda' %}" class="btn btn-info cuadro-boton">Nueva comanda</a>
     </div>
+    {% endif %}
+    <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+        <a href="{% url 'index' %}" class="btn btn-info cuadro-boton">Regresar</a>
+    </div>
 </div>
-{% endif %}
 <div class="d-flex justify-content-center">
     <div class="col-12 col-xs-12 col-sm-12 col-md-10 col-lg-10 col-xl-8 col-xxl-7 ">
         <table class="table cuadro caption-top">
@@ -43,12 +47,20 @@
                 {% for mesa in servicio %}
                 <tr>
                     <td class="text-center">
+                        {% if servicio_solicitar_perm %}
                         {% if mesa.observacion == '' %}
-                        <a href="{% url 'comanda_surte' mesa.mesa  mesa.id %}" class="btn btn-info cuadro-boton" title="Detalle de la mesa {{mesa.mesa}}">
+                        <a href="{% url 'comanda_surte' mesa.mesa  mesa.id %}" class="btn btn-info cuadro-boton"
+                            title="Detalle de la mesa {{mesa.mesa}}">
                             {{ mesa.mesa}}
                         </a>
                         {% else %}
-                        <a href="{% url 'comanda_surte' mesa.mesa  mesa.id mesa.observacion %}" class="btn btn-info cuadro-boton" title="Detalle de la mesa {{mesa.mesa}}">
+                        <a href="{% url 'comanda_surte' mesa.mesa  mesa.id mesa.observacion %}"
+                            class="btn btn-info cuadro-boton" title="Detalle de la mesa {{mesa.mesa}}">
+                            {{ mesa.mesa}}
+                        </a>
+                        {% endif %}
+                        {% else %}
+                        <a href="#" class="btn btn-info cuadro-boton" title="Detalle de la mesa {{mesa.mesa}}">
                             {{ mesa.mesa}}
                         </a>
                         {% endif %}
@@ -57,25 +69,47 @@
                         {{ mesa.observacion}}
                     </td>
                     <td class="text-end align-bottom" style="font-size: large; padding-right: 20px;">
-                        {% if mesa.importe_por_pagar is None %}
-                        0
+                        {% if servicio_ver_perm %}
+                        <a href="{% url 'comanda_ver' mesa.id %}" class="cuadro btn btn-info"
+                            title="Cancelar la mesa {{mesa.mesa}}">
+                            {% if mesa.importe_por_pagar is None %}
+                            0
+                            {% else %}
+                            {{ mesa.importe_por_pagar}}
+                            {% endif %}
+                        </a>
                         {% else %}
-                        {{ mesa.importe_por_pagar}}
+                        <a href="#" class="cuadro btn btn-info" title="Cancelar la mesa {{mesa.mesa}}">
+                            {% if mesa.importe_por_pagar is None %}
+                            0
+                            {% else %}
+                            {{ mesa.importe_por_pagar}}
+                            {% endif %}
+                        </a>
                         {% endif %}
                     </td>
                     <td>
-                        {% if mesa.cantidad_recibidas == 0 %}
-                        <a href="#" class="btn btn-danger cuadro-boton-rojo" title="Cancelar la mesa {{mesa.mesa}}">
+                        {% if mesa.cantidad_recibidas == 0 and mesa.cantidad_solicitadas == 0 %}
+                        {% if servicio_cancelar_perm %}
+                        <a href="{% url 'cancela_comanda' mesa.id %}" class="btn btn-danger cuadro-boton-rojo"
+                            title="Cancelar la mesa {{mesa.mesa}}">
                             Cancelar
                         </a>
-                        {% elif mesa.importe_por_pagar is None %}
-                        <a href="#" class="btn btn-success cuadro-boton-verde" title="Cerrar cuenta de la mesa {{mesa.mesa}}">
+                        {% endif %}
+                        {% elif mesa.importe_por_pagar is None and mesa.cantidad_solicitadas == 0 %}
+                        {% if servicio_cierra_perm %}
+                        <a href="{% url 'cierra_comanda' mesa.id %}" class="btn btn-success cuadro-boton-verde"
+                            title="Cerrar cuenta de la mesa {{mesa.mesa}}">
                             Cerrar
                         </a>
+                        {% endif %}
                         {% else %}
-                        <a href="{% url 'pagos' mesa.id %}" class="btn btn-info cuadro-boton" title="Pagar cuenta de la mesa {{mesa.mesa}}">
+                        {% if servicio_pagar_perm %}
+                        <a href="{% url 'pagos' mesa.id %}" class="btn btn-info cuadro-boton"
+                            title="Pagar cuenta de la mesa {{mesa.mesa}}">
                             Pagar
                         </a>
+                        {% endif %}
                         {% endif %}
                     </td>
                 </tr>
@@ -84,4 +118,5 @@
         </table>
     </div>
 </div>
+{% endif %}
 {% endblock %}

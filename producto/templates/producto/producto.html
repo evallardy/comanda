@@ -8,12 +8,12 @@
 {% endblock %}
 {% block contenido %}
 {% if user.is_authenticated %}
+{% if catalogo_agregar_perm or catalogo_modificar_perm %}
 <div class="row d-flex justify-content-center">
     <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
         <h2 class="cuadro">Producto</h2>
     </div>
 </div>
-{% endif %}
 <div class="row text-center">
     <h4 style="color: rgb(11, 125, 231);">{{accion}}</h4>
     <div class="row d-flex justify-content-around">
@@ -108,4 +108,6 @@
         }
     });
 </script>
+{% endif %}
+{% endif %}
 {% endblock %}

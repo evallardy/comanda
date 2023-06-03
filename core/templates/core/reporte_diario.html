@@ -18,7 +18,7 @@
     </div>
     <hr>
     <div class="d-flex justify-content-center">
-        <table class="table table-striped col-10" style="border-color: blue">
+        <table class="table table-striped col-7" style="border-color: blue">
             <thead>
                 <tr>
                     <th class="text-center col-4">Area</th>
@@ -27,23 +27,21 @@
                 </tr>
             </thead>
             <tbody>
-                {% for etapa in reporte_diario %}
                 <tr>
-                    <td class="col-5">Cocina</td>
-                    <td class="text-end col-2">{{ etapa.importe_por_cobrar_cocina|default_if_none:"0" }}</td>
-                    <td class="text-end col-2">{{ etapa.importe_pagados_cocina|default_if_none:"0" }}</td>
+                    <td class="col-5">Bar</td>
+                    <td class="text-end col-2">{{ reporte_diario.importe_por_cobrar_bar|default_if_none:"0.00" }}</td>
+                    <td class="text-end col-2">{{ reporte_diario.importe_pagados_cocina|default_if_none:"0.00" }}</td>
                 </tr>
                 <tr>
-                    <td>Bar</td>
-                    <td class="text-end">{{ etapa.importe_por_cobrar_bar|default_if_none:"0" }}</td>
-                    <td class="text-end">{{ etapa.importe_pagados_bar|default_if_none:"0" }}</td>
+                    <td>Cocina</td>
+                    <td class="text-end">{{ reporte_diario.importe_por_cobrar_cocina|default_if_none:"0.00" }}</td>
+                    <td class="text-end">{{ reporte_diario.importe_pagados_cocina|default_if_none:"0.00" }}</td>
                 </tr>
                 <tr>
                     <td>Total</td>
-                    <td class="text-end">{{ etapa.importe_por_cobrar|default_if_none:"0" }}</td>
-                    <td class="text-end">{{ etapa.importe_pagados|default_if_none:"0" }}</td>
+                    <td class="text-end">{{ reporte_diario.importe_por_cobrar|default_if_none:"0.00" }}</td>
+                    <td class="text-end">{{ reporte_diario.importe_pagados|default_if_none:"0.00" }}</td>
                 </tr>
-                {% endfor %}
             </tbody>
         </table>
     </div>

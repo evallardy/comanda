@@ -10,9 +10,15 @@
 {% bootstrap_javascript jquery='full' %}
 {% endblock %}
 {% block contenido %}
+{% if user.is_authenticated and entregas_perm %}
 <div class="d-flex justify-content-center">
   <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
     <h2 class="cuadro">Para entregar</h2>
+  </div>
+</div>
+<div class="d-flex justify-content-center">
+  <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+      <a href="{% url 'index' %}" class="btn btn-info cuadro-boton">Regresar</a>
   </div>
 </div>
 <div class="d-flex justify-content-center">
@@ -42,12 +48,16 @@
             {% endfor %}
           </td>
           <td>
+            {% if entregas_ok_perm %}
             <a href="{% url 'termina' producto.id 'entregas' %}" class="btn btn-info" title="Entregada">
               <img src="{% static 'core/img/atendida.svg' %}" width="20" />
             </a>
+            {% endif %}
+            {% if entregas_cancela_perm %}
             <a href="{% url 'cancela_elaborado' producto.id 'entregas' %}" class="btn btn-danger" title="Cancela entrega">
               <img src="{% static 'core/img/cancelar.svg' %}" width="20" />
             </a>
+            {% endif %}
           </td>
         </tr>
         {% endfor %}
@@ -55,4 +65,5 @@
     </table>
   </div>
 </div>
+{% endif %}
 {% endblock %}

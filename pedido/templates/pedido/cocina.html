@@ -10,9 +10,15 @@
 {% bootstrap_javascript jquery='full' %}
 {% endblock %}
 {% block contenido %}
+{% if user.is_authenticated and cocina_perm %}
 <div class="d-flex justify-content-center">
   <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
     <h2 class="cuadro">Para elaborar COCINA</h2>
+  </div>
+</div>
+<div class="d-flex justify-content-center">
+  <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+      <a href="{% url 'index' %}" class="btn btn-info cuadro-boton">Regresar</a>
   </div>
 </div>
 <div class="d-flex justify-content-center">
@@ -28,7 +34,7 @@
           <th class="col-1">Cant.</th>
           <th class="col-6">Especificación</th>
           <th class="col-1"></th>
-        </tr>
+        </tr> 
       </thead>
       <tbody>
         {% for producto in cocina %}
@@ -42,12 +48,16 @@
             {% endfor %}
           </td>
           <td>
+            {% if cocina_termina_perm %}
             <a href="{% url 'termina' producto.id 'cocina' %}" class="btn btn-info" title="Terminada">
               <img src="{% static 'core/img/atendida.svg' %}" width="20" />
             </a>
+            {% endif %}
+            {% if cocina_cancela_perm %}
             <a href="{% url 'cancela_prod' producto.id 'cocina' %}" class="btn btn-danger" title="Cancela elaboración">
               <img src="{% static 'core/img/cancelar.svg' %}" width="20" />
             </a>
+            {% endif %}
           </td>
         </tr>
         {% endfor %}
@@ -55,4 +65,5 @@
     </table>
   </div>
 </div>
+{% endif %}
 {% endblock %}

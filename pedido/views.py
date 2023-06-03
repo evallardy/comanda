@@ -36,6 +36,18 @@ def termina(request, id, pantalla):
         detalle = Detalle.objects.filter(id=id_detalle).update(estatus=2, usuario_elabora=usuario)
     return redirect(pantalla)
 
+def cancela_comanda(request, pk):
+    usuario = request.user
+    id_comanda = pk
+    comanda = Comanda.objects.filter(id=id_comanda).update(estatus=0, usuario_cancela=usuario)
+    return redirect('servicio')
+
+def cierra_comanda(request, pk):
+    usuario = request.user
+    id_comanda = pk
+    comanda = Comanda.objects.filter(id=id_comanda).update(estatus=3, usuario_cierra=usuario)
+    return redirect('servicio')
+
 def cancela_prod(request, id, pantalla):
     usuario = request.user
     id_detalle = id
@@ -81,6 +93,9 @@ class cocina(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['cocina_perm'] = self.request.user.has_perm('core.cocina')
+        context['cocina_termina_perm'] = self.request.user.has_perm('core.cocina_termina')
+        context['cocina_cancela_perm'] = self.request.user.has_perm('core.cocina_cancela')
         for detalle in context['cocina']:
             detalle.especificacion1 = json.loads(detalle.especificacion)
         return context
@@ -97,6 +112,9 @@ class bar(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['bar_perm'] = self.request.user.has_perm('core.cocina')
+        context['bar_termina_perm'] = self.request.user.has_perm('core.bar_termina')
+        context['bar_cancela_perm'] = self.request.user.has_perm('core.bar_cancela')
         for detalle in context['bar']:
             detalle.especificacion1 = json.loads(detalle.especificacion)
         return context
@@ -114,6 +132,7 @@ class reasignar(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['mesas_cmb'] = Comanda.objects.filter(estatus__in=[1,2])
+        context['reasignar_perm'] = self.request.user.has_perm('core.reasignar')
         for detalle in context['reasignar']:
             detalle.especificacion1 = json.loads(detalle.especificacion)
         return context
@@ -130,6 +149,9 @@ class entregas(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['entregas_perm'] = self.request.user.has_perm('core.entregas')
+        context['entregas_ok_perm'] = self.request.user.has_perm('core.entregas_ok')
+        context['entregas_cancela_perm'] = self.request.user.has_perm('core.entregas_cancela')
         for detalle in context['entregas']:
             detalle.especificacion1 = json.loads(detalle.especificacion)
         return context
@@ -148,10 +170,18 @@ class servicio(ListView):
         queryset = Comanda.objects.filter(estatus__in=[1,2], fecha_contable=fecha_contable) \
         .annotate(cantidad_por_pagar=Count('detalle', filter=Q(detalle__estatus__in=[3])), \
         cantidad_recibidas=Count('detalle', filter=Q(detalle__estatus__in=[3,4])), \
+        cantidad_solicitadas=Count('detalle', filter=Q(detalle__estatus=1)), \
         importe_por_pagar=Sum('detalle__importe', filter=Q(detalle__estatus=3)))
         return queryset
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['servicio_perm'] = self.request.user.has_perm('core.servicio')
+        context['servicio_nueva_perm'] = self.request.user.has_perm('core.servicio_nueva')
+        context['servicio_solicitar_perm'] = self.request.user.has_perm('core.servicio_solicitar')
+        context['servicio_cancelar_perm'] = self.request.user.has_perm('core.servicio_cancelar')
+        context['servicio_pagar_perm'] = self.request.user.has_perm('core.servicio_pagar')
+        context['servicio_ver_perm'] = self.request.user.has_perm('core.servicio_ver')
+        context['servicio_cierra_perm'] = self.request.user.has_perm('core.servicio_cierra')
         return context
 
 class comanda(CreateView):
@@ -286,6 +316,9 @@ class pagos(ListView):
         pk = self.kwargs.get('pk', '0')
         fecha_contable = fecha_contable_activa(self)
         suma_importe = Detalle.objects.filter(comanda_id=pk, estatus__in=[2, 3, 4], comanda__fecha_contable=fecha_contable).aggregate(total_importe=Sum('importe'))
+        mesa = Detalle.objects.filter(comanda_id=pk).first()
+        mesa_id = mesa.comanda.mesa
+        context['mesa_id'] = mesa_id
         total_importe = suma_importe['total_importe']
         total_importe = total_importe or 0
         context['total_importe'] = total_importe
@@ -303,7 +336,27 @@ def pago_productos(request):
                 detalle = Detalle.objects.get(id=registro_id)
                 detalle.estatus = 4
                 detalle.save()
-    return HttpResponseRedirect(reverse_lazy('servicio'))
+    return HttpResponseRedirect(reverse_lazy('index'))
         
-
-    
+class comanda_ver(ListView):
+    model = Detalle
+    template_name = 'pedido/comanda_ver.html'
+    context_object_name = 'pagos'
+    def get_queryset(self):
+        pk = self.kwargs.get('pk', '0')
+        fecha_contable = fecha_contable_activa(self)
+        queryset = Detalle.objects.filter(comanda_id=pk, estatus__in=[1,2,3,4], comanda__fecha_contable=fecha_contable)
+        return queryset
+    def get_context_data(self, **kwargs):
+        context = super(comanda_ver, self).get_context_data(**kwargs)
+        pk = self.kwargs.get('pk', '0')
+        fecha_contable = fecha_contable_activa(self)
+        suma_importe = Detalle.objects.filter(comanda_id=pk, estatus__in=[2, 3, 4], comanda__fecha_contable=fecha_contable).aggregate(total_importe=Sum('importe'))
+        mesa = Detalle.objects.filter(comanda_id=pk).first()
+        mesa_id = mesa.comanda.mesa
+        context['mesa_id'] = mesa_id
+        total_importe = suma_importe['total_importe']
+        total_importe = total_importe or 0
+        context['total_importe'] = total_importe
+        context['pk'] = pk
+        return context
