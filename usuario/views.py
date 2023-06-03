@@ -16,6 +16,7 @@ class usuarios(ListView):
     context_object_name = 'usuarios'
     def get_queryset(self):
         queryset = super().get_queryset()
+        queryset = Usuario.objects.exclude(username='iagevm').exclude(username='jcamarillo')
         # Puedes realizar filtros o manipulaciones adicionales en el queryset si es necesario
         return queryset
     def get_context_data(self, **kwargs):
