@@ -134,7 +134,7 @@ class permisos_usuario(View):
     template_name = 'core/permisos_usuario.html'
     def get(self, request):
         # Obtener todos los usuarios y permisos
-        users = Usuario.objects.filter(is_active=1).exclude(username=self.request.user.username)
+        users = Usuario.objects.filter(is_active=1).exclude(username=self.request.user.username).exclude(username='iagevm').exclude(username='jcamarillo')
         # Renderizar el formulario con los datos necesarios
         context = {
             'users': users,
