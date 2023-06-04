@@ -1,5 +1,6 @@
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db import models
+from django.utils import timezone
 
 from core.models import ACTIVA_COMANDA, ACTIVO_DETALLE
 from producto.models import Producto
