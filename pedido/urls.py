@@ -26,4 +26,8 @@ urlpatterns = [
     path('pago_productos/', pago_productos, name='pago_productos'),
     path('cancela_comanda/<pk>/', cancela_comanda, name='cancela_comanda'),
     path('cierra_comanda/<pk>/', cierra_comanda, name='cierra_comanda'),
+    path('comanda_cliente/', comanda_cliente.as_view(), name='comanda_cliente'),
+    path('asigna_comanda/<cliente>/<comanda>/', asigna_comanda, name='asigna_comanda'),
+    path('comanda_surte_cliente/<str:mesa>/<str:pk>/<str:observacion>/', comanda_surte_cliente.as_view(), name='comanda_surte_cliente'),
+
 ]

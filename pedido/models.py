@@ -16,6 +16,7 @@ class Comanda(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="UsuarioComanda", null=True, blank=True)
     usuario_cierra = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="UsuarioComandaCierre", null=True, blank=True)
     usuario_cancela = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="UsuarioComandaCancela", null=True, blank=True)
+    usuario_cliente = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="UsuarioComandaCliente", null=True, blank=True)
     estatus = models.IntegerField("Estatus", choices=ACTIVA_COMANDA, default=1)
     fecha_contable = models.DateField("Fecha Contable", default=default_fecha_contable)
     fecha_modificacion = models.DateTimeField("Fecha modificación", auto_now=True)

@@ -4,7 +4,7 @@ from django.urls import reverse_lazy, reverse
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.http import JsonResponse
 from django.utils import timezone
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, Q, Sum, Subquery
 from django.views.generic.detail import DetailView
 from django.db import transaction
 from django.views import View
@@ -266,29 +266,30 @@ class comanda_surte(CreateView):
         mesa = self.kwargs.get('mesa', '')
         observacion = self.kwargs.get('observacion', '')
         lista = request.POST.get('lista')
-        lista_json = json.loads(lista)
-        usuario = self.request.user
-        with transaction.atomic():
-            num_comanda = pk
-            for item in lista_json:
-                nombre = item['nombre']
-                cantidad = item['cantidad']
-                producto_id = item['productoId']
-                precio = item['precio']
-                importe = item['importe']
-                json_elemento = item['jsonElemento']
-                # Crear el detalle de la comanda
-                detalle = Detalle(
-                    comanda_id=num_comanda,
-                    producto_id=producto_id,
-                    nom_producto=nombre,
-                    especificacion=json_elemento,
-                    cantidad=cantidad,
-                    precio_unitario=precio,
-                    importe=importe,
-                    usuario=usuario
-                )
-                detalle.save()
+        if lista:
+            lista_json = json.loads(lista)
+            usuario = self.request.user
+            with transaction.atomic():
+                num_comanda = pk
+                for item in lista_json:
+                    nombre = item['nombre']
+                    cantidad = item['cantidad']
+                    producto_id = item['productoId']
+                    precio = item['precio']
+                    importe = item['importe']
+                    json_elemento = item['jsonElemento']
+                    # Crear el detalle de la comanda
+                    detalle = Detalle(
+                        comanda_id=num_comanda,
+                        producto_id=producto_id,
+                        nom_producto=nombre,
+                        especificacion=json_elemento,
+                        cantidad=cantidad,
+                        precio_unitario=precio,
+                        importe=importe,
+                        usuario=usuario
+                    )
+                    detalle.save()
         return HttpResponseRedirect(reverse_lazy('servicio'))
 
 class valida_mesa(View):
@@ -359,4 +360,92 @@ class comanda_ver(ListView):
         total_importe = total_importe or 0
         context['total_importe'] = total_importe
         context['pk'] = pk
+        comandas = Comanda.objects.filter(fecha_contable=fecha_contable, estatus__in=[1,2])
+        registros_con_usuario = comandas.exclude(usuario_cliente__isnull=True).count()
+        if registros_con_usuario > 0:
+            clientes = Usuario.objects.filter(cliente=1).exclude(id__in=Subquery(comandas.values('usuario_cliente')))
+        else:
+            clientes = Usuario.objects.filter(cliente=1)
+        context['clientes'] = clientes
+        datos_comanda = Comanda.objects.filter(id=pk).first()
+        cliente_asignado = datos_comanda.usuario_cliente_id or 0
+        context['cliente_asignado'] = cliente_asignado or 0
+        if cliente_asignado:
+            datos_cliente_signado = Usuario.objects.filter(id=cliente_asignado).first()
+            nombre_asigando = datos_cliente_signado.first_name + ' ' + datos_cliente_signado.last_name
+            context['nombre_asigando'] = nombre_asigando
         return context
+
+class comanda_cliente(ListView):
+    model = Detalle
+    template_name = 'pedido/comanda_cliente.html'
+    context_object_name = 'elementos'
+    def get_queryset(self):
+        fecha_contable = fecha_contable_activa(self)
+        usuario = self.request.user
+        queryset = Detalle.objects.filter(comanda__usuario_cliente=usuario.id, estatus__in=[1,2,3,4], comanda__fecha_contable=fecha_contable)
+        return queryset
+    def get_context_data(self, **kwargs):
+        context = super(comanda_cliente, self).get_context_data(**kwargs)
+        fecha_contable = fecha_contable_activa(self)
+        usuario = self.request.user
+        importe_pagado = Detalle.objects.filter(comanda__usuario_cliente=usuario.id, estatus=4, comanda__fecha_contable=fecha_contable).aggregate(total_importe=Sum('importe'))
+        importe_por_pagar = Detalle.objects.filter(comanda__usuario_cliente=usuario.id, estatus__in=[1,2,3], comanda__fecha_contable=fecha_contable).aggregate(total_importe=Sum('importe'))
+        importe_total = Detalle.objects.filter(comanda__usuario_cliente=usuario.id, estatus__in=[1,2,3,4], comanda__fecha_contable=fecha_contable).aggregate(total_importe=Sum('importe'))
+        mesa = Comanda.objects.filter(usuario_cliente=usuario.id, fecha_contable=fecha_contable).first()
+        mesa_id = mesa.mesa
+        context['mesa_id'] = mesa_id
+        context['importe_pagado'] = importe_pagado
+        context['importe_por_pagar'] = importe_por_pagar
+        context['importe_total'] = importe_total
+        return context
+
+def asigna_comanda(request, cliente, comanda):
+    comanda = Comanda.objects.filter(id=comanda).update(usuario_cliente_id=cliente)
+
+class comanda_surte_cliente(CreateView):
+    model = Detalle
+    form_class = DetalleForm
+    template_name = 'pedido/detalle_surte_cliente.html'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pk = self.kwargs.get('pk', '0')
+        mesa = self.kwargs.get('mesa', '')
+        observacion = self.kwargs.get('observacion', '')
+        context['mesa'] = mesa
+        context['observacion'] = observacion
+        context['producto_cmb'] = Producto.objects.filter(estatus=1)
+        fecha_contable = fecha_contable_activa(self)
+        context['activas'] = Comanda.objects.filter(estatus__in=[1,2], fecha_contable=fecha_contable)
+        context['usuario'] = self.request.user
+        return context
+    def post(self, request, *args, **kwargs):
+        pk = self.kwargs.get('pk', '0')
+        mesa = self.kwargs.get('mesa', '')
+        observacion = self.kwargs.get('observacion', '')
+        lista = request.POST.get('lista')
+        if lista:
+            lista_json = json.loads(lista)
+            usuario = self.request.user
+            with transaction.atomic():
+                num_comanda = pk
+                for item in lista_json:
+                    nombre = item['nombre']
+                    cantidad = item['cantidad']
+                    producto_id = item['productoId']
+                    precio = item['precio']
+                    importe = item['importe']
+                    json_elemento = item['jsonElemento']
+                    # Crear el detalle de la comanda
+                    detalle = Detalle(
+                        comanda_id=num_comanda,
+                        producto_id=producto_id,
+                        nom_producto=nombre,
+                        especificacion=json_elemento,
+                        cantidad=cantidad,
+                        precio_unitario=precio,
+                        importe=importe,
+                        usuario=usuario
+                    )
+                    detalle.save()
+        return HttpResponseRedirect(reverse_lazy('index'))

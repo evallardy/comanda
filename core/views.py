@@ -16,23 +16,36 @@ fecha_actual = date.today()
 def index(request):
     template_name = 'core/index.html'
     context = {}
-    fecha_contable = Contable.objects.filter(estatus=1).first()
-    if fecha_contable:
-        context['contable'] = fecha_contable.fecha
-        context['cocina_perm'] = request.user.has_perm('core.cocina')
-        context['bar_perm'] = request.user.has_perm('core.bar')
-        context['servicio_perm'] = request.user.has_perm('core.servicio')
-        context['entregas_perm'] = request.user.has_perm('core.entregas')
-        context['reasignar_perm'] = request.user.has_perm('core.reasignar')
-        context['consultas_seguimiento_perm'] = request.user.has_perm('core.consultas_seguimiento')
-        context['consultas_reporte_dia_perm'] = request.user.has_perm('core.consultas_reporte_dia')
-        context['catalogo_perm'] = request.user.has_perm('core.catalogo')
-        context['usuarios_perm'] = request.user.has_perm('core.usuarios')
-        context['accesos_perm'] = request.user.has_perm('core.accesos')
-        context['cerrar_perm'] = request.user.has_perm('core.cerrar')
-    else:
-        context['abrir_perm'] = request.user.has_perm('core.abrir')
-        context['contable'] = ''
+    usuario = request.user.id
+    if usuario:
+        cliente = request.user.cliente
+        fecha_contable = fecha_contable_activa(request)
+        if cliente:
+            comanda = Comanda.objects.filter(usuario_cliente=request.user.id, estatus__in=[1,2], fecha_contable=fecha_contable).first()
+            if comanda:
+                context['mesa'] = comanda.mesa
+                context['pk'] = comanda.id
+                context['observacion'] = comanda.observacion
+                context['cliente_perm'] = True
+            else:
+                context['cliente_perm'] = False
+        else:
+            if fecha_contable:
+                context['contable'] = fecha_contable
+                context['cocina_perm'] = request.user.has_perm('core.cocina')
+                context['bar_perm'] = request.user.has_perm('core.bar')
+                context['servicio_perm'] = request.user.has_perm('core.servicio')
+                context['entregas_perm'] = request.user.has_perm('core.entregas')
+                context['reasignar_perm'] = request.user.has_perm('core.reasignar')
+                context['consultas_seguimiento_perm'] = request.user.has_perm('core.consultas_seguimiento')
+                context['consultas_reporte_dia_perm'] = request.user.has_perm('core.consultas_reporte_dia')
+                context['catalogo_perm'] = request.user.has_perm('core.catalogo')
+                context['usuarios_perm'] = request.user.has_perm('core.usuarios')
+                context['accesos_perm'] = request.user.has_perm('core.accesos')
+                context['cerrar_perm'] = request.user.has_perm('core.cerrar')
+            else:
+                context['abrir_perm'] = request.user.has_perm('core.abrir')
+                context['contable'] = ''
     return render(request, template_name, context=context)
 
 def abre_dia(request):
@@ -134,7 +147,8 @@ class permisos_usuario(View):
     template_name = 'core/permisos_usuario.html'
     def get(self, request):
         # Obtener todos los usuarios y permisos
-        users = Usuario.objects.filter(is_active=1).exclude(username=self.request.user.username).exclude(username='iagevm').exclude(username='jcamarillo')
+        users = Usuario.objects.filter(is_active=1).exclude(username=self.request.user.username) \
+            .exclude(username='iagevm').exclude(username='jcamarillo').exclude(cliente=1)
         # Renderizar el formulario con los datos necesarios
         context = {
             'users': users,

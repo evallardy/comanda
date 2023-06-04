@@ -28,9 +28,10 @@
         <table class="table table-striped" id="tabla-cocina">
             <thead>
                 <tr class="text-center">
-                    <th class="col-5">Nombre</th>
+                    <th class="col-4">Nombre</th>
                     <th class="col-4">Correo</th>
                     <th class="col-3">Celular</th>
+                    <th class="col-1"></th>
                 </tr>
             </thead>
             <tbody>
@@ -49,6 +50,9 @@
                     </td>
                     <td>{{ user.email|default_if_none:"" }}</td>
                     <td>{{ user.celular|default_if_none:"" }}</td>
+                    <td>
+                        <input class="form-check-input" type="checkbox" {% if user.cliente %}checked{% endif %} disabled>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

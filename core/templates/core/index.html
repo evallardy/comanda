@@ -8,6 +8,29 @@
 {% endblock %}
 {% block contenido %}
 {% if user.is_authenticated %}
+{% if user.cliente == 1 %}
+<div class="row d-flex justify-content-center">
+    <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+        <h2 class="cuadro">Opciones</h2>
+    </div>
+</div>
+<div class="container">
+    {% if cliente_perm %}
+    <div class="row d-flex justify-content-around" style="padding: 20px;">
+        <a type="button" class="btn btn-info col-4 cuadro-boton" style="font-size: x-large; padding: 15px 0 15px 0; "
+            href="{% url 'comanda_cliente' %}">
+            Comanda
+        </a>
+    </div>
+    <div class="row d-flex justify-content-around" style="padding: 20px;">
+        <a type="button" class="btn btn-info col-4 cuadro-boton" style="font-size: x-large; padding: 15px 0 15px 0; "
+            href="{% url 'comanda_surte_cliente' mesa pk observacion %}">
+            Solicita
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% else %}
 <div class="row d-flex justify-content-center">
     <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
         <h2 class="cuadro">Actividades</h2>
@@ -25,6 +48,12 @@
     {% endif %}
     {% else %}
     <div class="row d-flex justify-content-around" style="padding: 20px;">
+        {% if cliente_perm %}
+        <a type="button" class="btn btn-info col-3 cuadro-boton" style="font-size: x-large; padding: 15px 0 15px 0; "
+            href="#">
+            CLIENTES
+        </a>
+        {% endif %}
         {% if cocina_perm %}
         <a type="button" class="btn btn-info col-3 cuadro-boton" style="font-size: x-large; padding: 15px 0 15px 0; "
             href="{% url 'cocina' %}">
@@ -88,5 +117,6 @@
     </div>
     {% endif %}
 </div>
+{% endif %}
 {% endif %}
 {% endblock %}

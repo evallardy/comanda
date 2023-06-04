@@ -8,6 +8,7 @@ from django.contrib.auth.models import AbstractUser
 
 class Usuario(AbstractUser):
     celular = models.CharField(max_length=20, blank=True, null=True)
+    cliente = models.IntegerField('Cliente', blank=True, null=True, default=0)
     
     class Meta:
         db_table = 'Usuario'
