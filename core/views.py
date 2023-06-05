@@ -83,7 +83,11 @@ def abre_dia(request):
 def cierra_dia(request):
     usuario = request.user
     Contable.objects.filter(estatus=1).update(estatus=0, usuario_cierra=usuario)
-    return redirect('index')
+    context = {}
+    context['abrir_perm'] = request.user.has_perm('core.abrir')
+    context['contable'] = ''
+    return render(request, 'core/index.html', context=context)
+#    return redirect('index')
 #    return render(request, 'core/index.html')
 
 def consultas(request):
