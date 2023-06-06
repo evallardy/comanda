@@ -22,7 +22,7 @@ def index(request):
     usuario = request.user.id
     if usuario:
         cliente = request.user.cliente
-        fecha_contable = fecha_contable_activa(request)
+        fecha_contable = Contable.objects.filter(estatus=1).first()
         if cliente:
             comanda = Comanda.objects.filter(usuario_cliente=request.user.id, estatus__in=[1,2], fecha_contable=fecha_contable).first()
             if comanda:
@@ -34,7 +34,7 @@ def index(request):
                 context['cliente_perm'] = False
         else:
             if fecha_contable:
-                context['contable'] = fecha_contable
+                context['contable'] = fecha_contable.fecha
                 context['cocina_perm'] = request.user.has_perm('core.cocina')
                 context['bar_perm'] = request.user.has_perm('core.bar')
                 context['servicio_perm'] = request.user.has_perm('core.servicio')
