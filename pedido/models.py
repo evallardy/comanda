@@ -12,7 +12,7 @@ def default_fecha_contable():
     return contable.fecha if contable else timezone.now().date()
 
 class Comanda(models.Model):
-    mesa = models.CharField("Mesa", max_length=255)
+    mesa = models.CharField("Mesa", max_length=255, null=True, blank=True)
     observacion = models.CharField("Observación", max_length=255, null=True, blank=True)
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="UsuarioComanda", null=True, blank=True)
     usuario_cierra = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="UsuarioComandaCierre", null=True, blank=True)

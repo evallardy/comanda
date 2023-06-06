@@ -5,11 +5,14 @@ from django.db.models import Count, Q, Sum
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django.http import JsonResponse
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.models import Permission
+from django.contrib.auth import authenticate, login, update_session_auth_hash
+from django.contrib import messages
 
 from core.models import Contable
 from pedido.models import Comanda, Detalle
 from usuario.models import Usuario
-from django.contrib.auth.models import Permission
 
 fecha_actual = date.today()
 
@@ -192,3 +195,14 @@ def todos_permisos(request, id):
     contable_permissions = set(Permission.objects.filter(content_type__model='contable').values_list('codename', flat=True))
     contable_model_permissions = set([perm[0] for perm in Contable._meta.permissions])
     contable_defined_permissions = contable_permissions.intersection(contable_model_permissions)
+
+def cambia_contrasena(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # importante para mantener la sesión del usuario activa
+            return redirect('index')  # cambia esto por la url a la que quieres redirigir al usuario después de actualizar la contraseña
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'registration/cambia_contrasena.html', {'form': form})

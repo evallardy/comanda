@@ -12,4 +12,5 @@ urlpatterns = [
     path('reporte_diario/', reporte_diario.as_view(), name='reporte_diario'),
     path('permisos_usuario/', permisos_usuario.as_view(), name='permisos_usuario'),
     path('todos_permisos/<id>/', todos_permisos, name='todos_permisos'),
+    path('cambia_contrasena/', cambia_contrasena, name='cambia_contrasena'),
 ]
