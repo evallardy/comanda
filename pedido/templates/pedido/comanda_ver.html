@@ -1,0 +1,109 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% block headJS %}
+<meta http-equiv="refresh" content="10">
+{% endblock %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block contenido %}
+<style>
+    .no-border {
+        border: none;
+        /* Opcionalmente, puedes añadir otros estilos para mejorar la apariencia */
+        outline: none;
+        /* Elimina el contorno al enfocar el campo */
+        box-shadow: none;
+        /* Elimina cualquier sombra */
+        font-size: 14px;
+    }
+</style>
+<div class="container col-12">
+    <form>
+        <div class="row container text-center" style="padding-top: 25px;">
+            <div class="col-12 text-center">
+                <a href="{% url 'servicio' %}" class="btn btn-info cuadro-boton">Regresar</a>
+            </div>
+        </div>
+        <div class="row container text-center" style="padding-top: 25px; font-size: 20px; font-weight: bold;">
+            <div class="col-12 text-center">
+                Total<br>
+                <input type="text" id="total_pago" readonly class="text-center no-border 
+                col-5 col-xs-4 col-sm-4 col-md-3 col-lg-2 col-xl-2 col-xxl-2 " style="font-size: 20px; font-weight: bold; box-shadow: 0 0 10px #000;
+                border-radius: 10px;" value="{{total_importe}}">
+            </div>
+        </div>
+        <div class="container col-12 ">
+            <div class="col-12">
+                <table class="table table-striped cuadro caption-top col-12">
+                    <caption>
+                        <h3>Comanda de la mesa - {{ mesa_id }}</h3>
+                    </caption>
+                    <thead>
+                        <tr>
+                            <th class="col-2">
+                                tipo
+                            </th>
+                            <th class="col-4">
+                                Desc.
+                            </th>
+                            <th class="col-1 text-center">
+                                Precio
+                            </th>
+                            <th class="col-1 text-center">
+                                Cant.
+                            </th>
+                            <th class="col-1 text-center">
+                                Imp.
+                            </th>
+                            <th class="col-1 text-center">
+                                
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mesa in pagos %}
+                        <tr class="align-middle">
+                            <td>
+                                {{mesa.descripcion}}
+                            </td>
+                            <td>
+                                {{mesa.especifico}}
+                            </td>
+                            <td class="text-end">
+                                {{mesa.precio_unitario}}
+                            </td>
+                            <td class="text-center">
+                                {{mesa.cantidad}}
+                            </td>
+                            <td class="text-end">
+                                {{mesa.importe}}
+                            </td>
+                            <td class="text-center">
+                                <a class="btn btn-info"  href="{% url 'comanda_detalle' mesa.id tipo_pago %}">
+                                    <img src="{% static 'core/img/productos.svg' %}" title="Productos" 
+                                        class="fondo-transparente" style="width: 15px; height: 15px">                                    
+                                </a>
+                            </td>
+                            {% if mesa.estatus == 1 or mesa.estatus == 2 %}
+                                {% if mesa.elaborados == 0 %}
+                                <td class="text-center">
+                                    <a class="btn btn-danger"  href="{% url 'cancela_pedido' mesa.id tipo_pago %}">
+                                        <img src="{% static 'core/img/cancelar.svg' %}" title="Cancelar" 
+                                            class="delete-icon fondo-transparente" style="width: 15px; height: 15px">                                    
+                                    </a>
+                                </td>
+                                {% endif %}
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

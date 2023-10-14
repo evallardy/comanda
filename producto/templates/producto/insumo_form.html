@@ -1,0 +1,45 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block contenido %}
+<div class="d-flex justify-content-center" style="padding: 20px;">
+    <div class="cuadro col-11 col-xs-10 col-sm-10 col-md-8 col-lg-7 col-xl-6 col-xxl-5 text-center">
+        <h1>{{ accion }} Insumos ({{ nombre }})</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-12" hidden>
+                    {{ form.grupo|as_crispy_field }}
+                </div>
+                <div class="col-12 text-center">
+                    <div class="col-10 mx-auto"> <!-- Agregamos mx-auto para centrar -->
+                        {{ form.nombre|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="col-12" hidden>
+                    {{ form.estatus|as_crispy_field }}
+                </div>
+            </div>
+            <br>
+            <div class="row col-12">
+                <div class="col-6 text-center">
+                    <button type="submit" class="btn btn-info cuadro-boton">Guardar</button>
+                </div>
+                <div class="col-6 text-center">
+                    <a href="{% url 'insumo_list' pk1 nombre %}" class="btn btn-info cuadro-boton">Regresar</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $("#id_nombre").focus();
+    });
+</script>
+{% endblock %}

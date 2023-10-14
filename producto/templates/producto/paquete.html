@@ -1,0 +1,232 @@
+{% extends "core/base.html" %}
+{{ form.media }}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block estilo %}
+<style>
+    .checkbox-large.form-check-input {
+        width: 25px;
+        height: 25px;
+        margin-right: 25px;
+    }
+</style>
+{% endblock %}
+{% block contenido %}
+<div class="row d-flex justify-content-center">
+    <div class="col-8 col-xs-7 col-sm-7 col-md-5 col-lg-4 col-xl-3 col-xxl-3 text-center">
+        <h2 class="cuadro">Combo-Promoción</h2>
+    </div>
+</div>
+<div class="text-center">
+    <h4 style="color: rgb(11, 125, 231);">{{accion}}</h4>
+    <div class="container cuadro col-11 col-xs-9 col-sm-9 col-md-9 col-lg-8 col-xl-7 col-xxl-6">
+        <form method="POST" id="formulario">
+            {% csrf_token %}
+            <div class="row d-flex justify-content-around" style="margin-top: 10px;">
+                <button type="submit" class="btn btn-info cuadro-boton col-5">Guarda</button>
+                <a href="{% url 'paquete_list' %}" class="btn btn-info cuadro-boton col-5">Regresar</a>
+            </div>
+            <br>
+            <div class="col-12">
+                {{form.nombre|as_crispy_field}}
+            </div>
+            <div class="col-12">
+                {{form.descripcion|as_crispy_field}}
+            </div>
+            <div class="d-flex justify-content-center">
+                <div class="col-6">
+                    {{form.tipo|as_crispy_field}}
+                </div>
+                <div class="col-5">
+                    {{form.precio|as_crispy_field}}
+                </div>
+            </div>
+            <hr>
+            <div class="row d-flex justify-content-center col-12">
+                <div class="col-12">
+                    <label>Producto</label>
+                    <select name="producto" id="id_producto" class="form-control">
+                        <option value=0>---------</option>
+                        {% for p in producto_cmb %}
+                        <option value="{{ p.id }}">{{ p.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row d-flex justify-content-center col-12">
+                <div class="col-3" id="gpo_cantidad">
+                    <label for="id_cantidad">Cantidad</label>
+                    <input type="text" class="form-control" name="cantidad" id="id_cantidad" style="text-align: center;"
+                        onfocusout="reformatear('id_cantidad')" onkeypress="return valideKey(event);">
+                </div>
+                <div class="col-2">
+                    <button type="button" class="btn btn-info cuadro-boton" onclick="agrega()"
+                        id="id_agregar" style="margin-top: 20px;">Agrega</button>
+                </div>
+            </div>
+            <div id="opciones">
+
+            </div>
+            <div>
+                <div class="col-12 d-flex justify-content-center row">
+                    <table class="table table-striped caption-top col-12 is-invalid" id="id_componentes">
+                        <caption>
+                            <h3>Contenido</h3>
+                        </caption>
+                        <thead>
+                            <tr>
+                                <th style="text-align: center;" hidden>id</th>
+                                <th class="col-7" style="text-align: center;">Producto</th>
+                                <th class="col-4" style="text-align: center;">Cantidad</th>
+                                <th class="col-1" style="text-align: center;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for paquete in componentes %}
+                                {% for producto in paquete.componentes %}
+                                <tr>
+                                    <td hidden>{{ producto.id }}</td>
+                                    <td class="text-start">{{ producto.nombre }}</td>
+                                    <td >{{ producto.cantidad }}</td>
+                                    <td >
+                                        <button class="delete-button col-1 fondo-transparente btn-elimina" style="border: none;">
+                                            <img src="{% static 'core/img/eliminar.svg' %}" alt="Eliminar" 
+                                                class="delete-icon fondo-transparente" style="width: 15px; height: 15px">
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% for error in form.non_field_errors %}
+                    <p id="error_1_id_componentes" class="invalid-feedback col-12"><strong>{{ error }}</strong></p>
+                    {% endfor %}
+                </div>
+            </div>
+            <hr>
+            <div class="row d-flex justify-content-around">
+                <button type="submit" class="btn btn-info cuadro-boton col-5">Guarda</button>
+                <a href="{% url 'producto_list' %}" class="btn btn-info cuadro-boton col-5">Regresar</a>
+            </div>
+            <input type="text" class="form-control" name="data" id="id_data" hidden>
+        </form>
+    </div>
+</div>
+<script>
+    $('.btn-elimina').on('click', function() {
+        event.preventDefault();
+        $(this).closest('tr').remove();
+    });
+    var accion = "{{accion}}";
+    $('#id_precio').on('focusout', function () {
+        reformatear('id_precio');
+    });
+    $('#id_precio').on('keypress', function (event) {
+        return valideKey(event);
+    });
+    function agrega() {
+        $("#id_agregar").attr('disabled', true);
+        var select = $('#id_producto');
+        var tabla = $('#id_componentes');
+        var nuevoTr = $('<tr>');
+        var nuevoTd1 = $('<td hidden>').text($("#id_producto").val()).addClass('col-1');
+        var nuevoTd2 = $('<td>').text(select.find('option:selected').text()).addClass('col-5 text-start');
+        var nuevoTd3 = $('<td>').text($("#id_cantidad").val()).addClass('col-3');
+        nuevoTr.append(nuevoTd1);
+        nuevoTr.append(nuevoTd2);
+        nuevoTr.append(nuevoTd3);
+    
+        var nuevoTd4 = $('<td>').addClass('col-1');
+        var $deleteButton = $("<button>", {
+            class: "delete-button col-1 fondo-transparente btn-elimina"
+        }).css({
+            border: "none",
+        });
+        var $deleteIcon = $("<img>", {
+            src: "{% static 'core/img/eliminar.svg' %}",
+            alt: "Eliminar",
+            class: "delete-icon fondo-transparente"
+        }).css({
+            width: "15px",
+            height: "15px",
+        });            
+        $deleteButton.empty().append($deleteIcon);
+        nuevoTd4.append($deleteButton);
+        nuevoTr.append(nuevoTd4);
+        tabla.find('tbody').append(nuevoTr);
+        $("#id_producto").val(0);
+        $("#id_cantidad").val(0);
+    }
+    $('#id_cantidad').on('keyup', function () {
+        validacion();
+    });
+    $('#id_producto').change(function () {
+        validacion();
+    });
+    function validacion() {
+        opcion = $("#id_producto").val();
+        cantidad = $("#id_cantidad").val();
+        if (opcion == "" || opcion == 0 || cantidad == "" || cantidad == 0) {
+            $("#id_agregar").attr('disabled', true);
+        } else {
+            var tabla = $('#id_componentes');
+            $("#id_agregar").attr('disabled', false);
+            tabla.find('tr').each(function() {
+                if ($(this).find('td:eq(0)').text() == opcion) {
+                    $("#id_agregar").attr('disabled', true);
+                }
+            });        
+        }
+    }
+    $('#formulario').submit(function(event) {
+        event.preventDefault();
+    
+        var jsonData = [];
+    
+        $('#id_componentes tbody tr').each(function() {
+            var columna1Value = $(this).find('td:eq(0)').text();
+            var columna2Value = $(this).find('td:eq(1)').text();
+            var columna3Value = $(this).find('td:eq(2)').text();
+    
+            var rowData = {
+                id: columna1Value,
+                nombre: columna2Value,
+                cantidad: columna3Value
+            };
+    
+            jsonData.push(rowData);
+        });
+    
+        var jsonStr = JSON.stringify(jsonData);
+    
+        $("#id_data").val(jsonStr);
+    
+        this.submit();
+    });
+    $(document).ready(function () {
+        $("#id_precio").css("text-align", "right");
+        $("#id_nombre").focus();
+        $("#id_agregar").attr('disabled', true);
+        $('#id_producto').change(function () {
+            var selectedOption = $(this).find('option:selected');
+
+        });
+        $('#id_tipo').change(function () {
+            var selectedOption = $(this).find('option:selected');
+            if (selectedOption == 1) {
+                
+            } else if (selectedOption == 2) {
+
+            } else if (selectedOption == 3) {
+
+            }
+        });
+    });
+</script>
+{% endblock %}

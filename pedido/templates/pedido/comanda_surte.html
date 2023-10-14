@@ -1,0 +1,597 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block estilo %}
+<style>
+    .enviarFormulario.disabled {
+        opacity: 0.5;
+        /* Reduce la opacidad para indicar que está desactivado */
+        pointer-events: none;
+        /* Evita que se pueda hacer clic en el botón */
+        /* Agrega otros estilos para reflejar visualmente el estado desactivado */
+    }
+
+    /* Estilo para ocultar la ventana modal por defecto */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+    }
+
+    /* Estilo para el contenido de la ventana modal */
+    .modal-content {
+        background-color: #fff;
+        border-radius: 10px;
+        width: 300px;
+        height: 500px;
+        padding: 20px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    /* Estilo para el botón de cierre de la ventana modal */
+    .close {
+        float: right;
+        cursor: pointer;
+    }
+
+    .modal-header {
+        position: absolute;
+        top: 10%;
+        left: 50%;
+        width: 300px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        background-color: #f0f0f0;
+        /* Cambia el color de fondo si es necesario */
+    }
+
+    .modal-header button {
+        margin-right: 10px;
+        /* Ajusta el margen entre los botones si es necesario */
+    }
+
+    .negrita-italica {
+        font-weight: bold;
+        font-style: italic;
+    }
+</style>
+{% endblock %}
+{% block contenido %}
+{% if user.is_authenticated %}
+<div class="row d-flex justify-content-center">
+    <div class="col-8 col-xs-5 col-sm-6 col-md-5 col-lg-4 col-xl-4 col-xxl-4 text-center">
+        <h2 class="cuadro">Agrega a Camanda</h2>
+    </div>
+</div>
+<div>
+    <form method="POST" id="formulario">
+        {% csrf_token %}
+        <div id="ventanaInsumos" class="modal">
+            <div class="modal-content" style="padding: 5px; max-height: 80vh; overflow-y: auto;">
+                <!-- Contenido de la ventana modal (tabla, etc.) -->
+                <div class="container col-12">
+                    <button class="close btn btn-info col-5 cerrarModal">Regresar</button>
+                    <button class="guarda_insumos btn btn-info col-5 guardaModal">Guardar</button>
+                </div>
+                <div class="container col-12">
+                    <table class="table table-striped table-hover align-middle" id="insumos_check">
+                        <thead>
+                            <tr>
+                                <th class="col-9">Insumo</th>
+                                <th class="col-3"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Jitomate</td>
+                                <td>
+                                    <input type="checkbox" name="existe_{{ insumo.id }}" id="id_existe_{{ insumo.id }}"
+                                        {%if insumo.estatus %} checked {% endif %}
+                                        class="form-check-input checkbox-large existencia">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <input type="text" id="id_tabla_campo_insumo" name="tabla_campo_insumo" hidden>
+                </div>
+                <div class="container col-12">
+                    <button class="close btn btn-info col-5 cerrarModal">Regresar</button>
+                    <button class="guarda_insumos btn btn-info col-5 guardaModal">Guardar</button>
+                </div>
+            </div>
+        </div>
+        <div class="container cuadro col-11 col-xs-10 col-sm-9 col-md-9 col-lg-8 col-xl-7 col-xxl-6">
+            <div class="row">
+                <div class="col-3 text-center">
+                    {{ form.mesa|as_crispy_field }}
+                </div>
+                <div class="col-9">
+                    {{form.observacion|as_crispy_field}}
+                </div>
+                <div class="row d-flex justify-content-around">
+                    <!--  <button class="btn btn-info cuadro-boton col-5" id="guardar">Guardar</button>  -->
+                    <a id="enviarFormulario" class="btn btn-info cuadro-boton col-5">Guardar</a>
+                    <a href="{% url 'servicio'  %}" class="btn btn-info cuadro-boton col-5">Regresar</a>
+                </div>
+            </div>
+        </div>
+        <div id="detalle" class="container cuadro col-11 col-xs-10 col-sm-9 col-md-9 col-lg-8 col-xl-7 col-xxl-6">
+            <div class="row">
+                <div class="col-10">
+                    <label>Producto</label>
+                    <select name="producto" id="id_producto" class="form-control">
+                        <option value=0>---------</option>
+                        {% for p in producto_cmb %}
+                        <option value="PD-{{ p.id }}">{{ p.nombre }} - $ {{ p.precio }}</option>
+                        {% endfor %}
+                        {% for p in paquete_cmb %}
+                        <option value="PQ-{{ p.id }}">{{ p.get_tipo_display }} - {{ p.nombre }} - $ {{ p.precio }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <label for="id_producto" class="text-danger col-12 text-center" id="label_producto"></label>
+                </div>
+                <div class="col-2" style="margin-top: 20px;" hidden>
+                    <input type="text" class="form-control col-12" name="cantidad" id="id_cantidad"
+                        style="text-align: center;" onfocusout="reformatear('id_cantidad')"
+                        onkeypress="return valideKeySinPunto(event);">
+<!--                    <label for="id_cantidad" class="text-danger col-12 text-center" id="label_cantidad"></label>  -->
+                </div>
+                <div class="col-1" style="margin-top: 12px;">
+                    <a type="button" href="#" class="btn btn-info cuadro-boton" onclick="agregar_seleccion()"
+                        id="agregar">+</a>
+                </div>
+            </div>
+        </div>
+        <div id="detalle" class="container cuadro col-11 col-xs-10 col-sm-9 col-md-9 col-lg-8 col-xl-7 col-xxl-6">
+            <div class="row">
+                <table class="col-12 table table-striped table-hover" id="lista">
+                    <thead>
+                        <tr>
+                            <th hidden>Id Pq</th> <!-- HIDD-->
+                            <th hidden>Tipo</th> <!-- HIDD-->
+                            <th class="col-3" hidden>Especif.</th>
+                            <th class="col-3" hidden>Paquete</th>
+                            <th hidden>id Prod</th> <!-- HIDD-->
+                            <th class="col-8">Producto</th>
+                            <th hidden>Cant.</th> <!-- HIDD-->
+                            <th class="col-1"></th>
+                            <th class="col-1">Precio</th>
+                            <th hidden>Detallo</th> <!-- HIDD-->
+                            <th hidden>Insumos</th> <!-- HIDD-->
+                            <th class="col-1"></th>
+                            <th hidden></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <input type="text" id="contador" hidden>
+        <input type="text" id="id_pedido" name="pedido" hidden>
+    </form>
+</div>
+<script>
+    $(".guardaModal").click(function () {
+        event.preventDefault();
+
+        campo = $('#id_tabla_campo_insumo').val();
+
+        // guardar insumos seleccionados  campo = '#insumos_sol_2'
+
+        numero = campo.substring(13, 25);
+
+        nombre_boton = '#boton_req_' + numero;
+
+        $(nombre_boton).removeClass('btn-warning');
+        $(nombre_boton).addClass('btn-success');
+
+        var datos = [];
+        $('#insumos_check tbody tr').each(function () {
+            var fila = $(this);
+            var id = fila.find('td:eq(0)').text();
+            if (id != 'Selecciona:') {
+                var opcion = parseInt(fila.find('td:eq(1)').text());
+                var nombre_grupo = fila.find('td:eq(2)').text();
+                var nombre_insumo = fila.find('td:eq(3)').text();
+                
+                pedir = false;
+                var input = fila.find('td:eq(4) input:first');
+
+                if (input.is(":checked")) {
+                    pedir = true;
+                }
+
+                var filaJSON = {
+                    id: id,
+                    opcion: opcion,
+                    nombre_grupo: nombre_grupo,
+                    nombre_insumo: nombre_insumo,
+                    pedir: pedir,
+                };
+                datos.push(filaJSON);
+            }
+        });
+
+        var seleccionJSON = JSON.stringify(datos);
+
+        insumos_solicitados = '#insumos_sol_' + numero;
+
+        $(insumos_solicitados).text(seleccionJSON);
+
+        valida_datos();
+        $("#ventanaInsumos").hide();
+    });
+    $("#enviarFormulario").click(function (e) {
+        e.preventDefault();
+        var datos = [];
+        $('#lista tbody tr').each(function () {
+            var fila = $(this);
+            var paquete_id = fila.find('td:eq(0)').text();
+            var tipo = parseInt(fila.find('td:eq(1)').text());
+            var especificacion = fila.find('td:eq(2)').text();
+            var nombre_paquete = fila.find('td:eq(3)').text();
+            var producto_id = parseInt(fila.find('td:eq(4)').text());
+            var nombre_producto = fila.find('td:eq(5)').text();
+            var cantidad = 1;
+            var precio = parseInt(fila.find('td:eq(8)').text());
+            var solicitado_json = fila.find('td:eq(9)').text();
+            var componentes_json = fila.find('td:eq(10)').text();
+            var cobrar_caja = fila.find('td:eq(12)').text();
+
+            var filaJSON = {
+                paquete_id: parseInt(paquete_id),
+                tipo: tipo,
+                especificacion: especificacion,
+                nombre_paquete: nombre_paquete,
+                producto_id: parseInt(producto_id),
+                nombre_producto: nombre_producto,
+                cantidad: 1,
+                precio: parseFloat(precio),
+                solicitado_json: JSON.parse(solicitado_json),
+                componentes_json: JSON.parse(componentes_json),
+                cobrar_caja : cobrar_caja
+            };
+            datos.push(filaJSON);
+        });
+        // Convierte el array de datos en un objeto JSON
+        var datosJSON = JSON.stringify(datos);
+        $('#id_pedido').val(datosJSON);
+        $('#formulario').submit();
+    });
+
+    $("#abrirModal").click(function () {
+        $("#ventanaInsumos").show();
+    });
+    $(".cerrarModal").click(function () {
+        event.preventDefault();
+        $("#ventanaInsumos").hide();
+    });
+    $('.btn-elimina').on('click', function () {
+        event.preventDefault();
+        $(this).closest('tr').remove();
+    });
+    $('.tipo_precio').on('focusout', function () {
+        event.preventDefault();
+        reformatear('id_precio');
+    });
+    $('.tipo_precio').on('keypress', function (event) {
+        event.preventDefault();
+        return valideKey(event);
+    });
+    $('#id_producto').on('change', function (event) {
+        event.preventDefault();
+        valida_datos();
+    });
+    function valida_datos() {
+        cod_error = false;
+        cod_error1 = false;
+        $('#agregar').removeClass("disabled");
+        if ($('#id_producto').val() == 0) {
+            $('#label_producto').html('Selecciona un producto');
+            cod_error = true;
+        } else {
+            $('#label_producto').html('');
+        }
+//        if ($('#id_cantidad').val() == 0 || $('#id_cantidad').val().trim() == '') {
+//            $('#label_cantidad').html('Ingresa cantidad');
+//            cod_error = true;
+//        } else {
+//            $('#label_cantidad').html('');
+//        }
+        if (cod_error) {
+            $('#agregar').addClass("disabled");
+        }
+        tabla = $('#lista');
+        if ((tabla.find("tbody tr").length > 0) && (!cod_error1)) {
+            contador = $('[id^="boton_req_"].btn-warning').length;
+            if (contador > 0) {
+                $('#enviarFormulario').addClass("disabled");
+            } else {
+                $('#enviarFormulario').removeClass("disabled");
+            }
+        } else {
+            $('#enviarFormulario').addClass("disabled");
+        }
+    }
+    function agregar_seleccion() {
+        event.preventDefault();
+        var select = $('#id_producto');
+        var cantidad = 1;
+        var tabla = $('#lista');
+        //        var tipo_select =
+        $.ajax({
+            url: "/producto/lista/", //
+            method: "POST",
+            data: {
+                csrfmiddlewaretoken: "{{ csrf_token }}",
+                clave: select.val(),
+            },
+            success: function (response) {
+                var listado = response.listado;
+                contador_grupo = 0;
+                sw_caja = true;
+                for (var y = 0; y < 1; y++) {
+                    sw = 0;
+                    for (var i = 0; i < listado.length; i++) {
+                        var elemento = listado[i];
+                        valor = parseInt($('#contador').val());
+                        numero_tipo = valor + 1;
+                        $('#contador').val(numero_tipo);
+                        // Accede a los elementos individuales de la tupla aquí
+                        var paquete_id = elemento.paquete_id;
+                        var tipo = elemento.tipo;
+                        if (elemento.paquete_especificacion != '') {
+                            contador_grupo = numero_tipo;
+                            var paquete_especificacion = elemento.paquete_especificacion;
+                        } else {
+                            var paquete_especificacion = '';
+                        }
+                        var paquete_nombre = elemento.paquete_nombre;
+                        var producto_id = elemento.producto_id;
+                        var producto_nombre = elemento.producto_nombre;
+                        var precio = elemento.precio;
+                        var producto_insumos = elemento.producto_insumos;
+
+                        var nuevoTr = $('<tr class="fila_' + contador_grupo + '">');
+                        var nuevoTd1 = $('<td hidden>').text(paquete_id).addClass('col-1');
+                        var nuevoTd2 = $('<td hidden>').text(tipo).addClass('col-1');
+                        var nuevoTd3 = $('<td hidden>').text(paquete_especificacion).addClass('col-1');
+                        var nuevoTd4 = $('<td hidden>').text(paquete_nombre).addClass('col-1');
+                        var nuevoTd5 = $('<td hidden>').text(producto_id).addClass('col-1');
+                        var nuevoTd6 = $('<td>').text(producto_nombre).addClass('col-1');
+                        var nuevoTd7 = $('<td hidden>').text(cantidad).addClass('col-1');
+
+                        var nuevoTd8 = $('<td>').addClass('col-1');
+
+                        insumos_requeridos = 'insumos_req_' + numero_tipo;
+                        insumos_solicitados = 'insumos_sol_' + numero_tipo;
+
+                        var botonInsumos = $('<button>').addClass('btn btn-warning');
+                        botonInsumos.attr('id', 'boton_req_' + numero_tipo);
+
+                        var imagenInsumos = $('<img>').attr('src', '/static/core/img/insumos.svg');
+                        imagenInsumos.attr('id', 'imagenInsumos' + numero_tipo);
+
+                        botonInsumos.on('click', function () {
+                            requisitos($(this));
+                        });
+                        botonInsumos.append(imagenInsumos);
+                        nuevoTd8.append(botonInsumos);
+
+
+                        var nuevoTd9 = $('<td>').text(precio).addClass('col-1');
+
+                        solicitados = [];
+                        for (var x = 0; x < producto_insumos.length; x++) {
+                            insumo_sol = producto_insumos[x];
+                            sol_id = insumo_sol.id;
+                            sol_opcion = insumo_sol.opcion;
+                            sol_estatus = insumo_sol.estatus;
+                            sol_nombre_grupo = insumo_sol.nombre_grupo;
+                            sol_nombre_insumo = insumo_sol.nombre_insumo;
+                            pedir_bolean = false;
+                            grupo_anterior = '';
+                            if (sol_estatus == 1 && sol_opcion !== '1') {
+                                if (sol_opcion == '3') {
+                                    pedir_bolean = true;
+                                } else {
+                                    if (grupo_anterior != sol_nombre_grupo) {
+                                        grupo_anterior = sol_nombre_grupo;
+                                        pedir_bolean = true;
+                                    }
+                                }
+                                solicitados.push({
+                                    'id': sol_id,
+                                    'opcion': sol_opcion,
+                                    'nombre_grupo': sol_nombre_grupo,
+                                    'nombre_insumo': sol_nombre_insumo,
+                                    'pedir': pedir_bolean
+                                });
+                            }
+                        }
+
+                        var solicitadosJSON = JSON.stringify(solicitados);
+
+                        var nuevoTd10 = $('<td hidden>').text(solicitadosJSON).addClass('col-1');
+                        nuevoTd10.attr('id', insumos_solicitados);
+
+                        var nuevoTd11 = $('<td hidden>').text(JSON.stringify(producto_insumos)).addClass('col-1');
+                        nuevoTd11.attr('id', insumos_requeridos);
+
+
+                        var nuevoTd12 = $('<td>').addClass('col-1');
+
+                        if (sw == 0) {
+
+                            var imagenEditar = $('<img>').attr('src', '/static/core/img/eliminar.svg');
+                            imagenEditar.attr('id', 'imagenEditar' + numero_tipo);
+
+                            var botonEditar = $('<button id="btn_' + numero_tipo + '">').addClass('btn btn-info');
+                            botonEditar.on('click', function () {
+                                elimina_fila($(this));
+                            });
+                            botonEditar.append(imagenEditar);
+                            nuevoTd12.append(botonEditar);
+                            sw = 1;
+                        }
+
+                        nuevoTr.append(nuevoTd1);
+                        nuevoTr.append(nuevoTd2);
+                        nuevoTr.append(nuevoTd3);
+                        nuevoTr.append(nuevoTd4);
+                        nuevoTr.append(nuevoTd5);
+                        nuevoTr.append(nuevoTd6);
+                        nuevoTr.append(nuevoTd7);
+                        nuevoTr.append(nuevoTd8);
+                        nuevoTr.append(nuevoTd9);
+                        nuevoTr.append(nuevoTd10);
+                        nuevoTr.append(nuevoTd11);
+                        nuevoTr.append(nuevoTd12);
+
+                        var nuevoTd13 = '';
+                        if (sw_caja) {
+                            nuevoTd13 = $('<td hidden>').text('Caja');
+                            sw_caja = false;
+                        } else {
+                            nuevoTd13 = $('<td>').text('');
+                        }
+                        nuevoTd13.attr('id', 'cobra_caja_' + numero_tipo);
+                        
+                        nuevoTr.append(nuevoTd13);
+
+                        tabla.append(nuevoTr);
+                    }
+                }
+                valida_datos();
+            },
+            cod_error: function (xhr, errmsg, err) {
+
+            }
+        });
+    }
+    function requisitos(objeto) {
+        event.preventDefault();
+        tabla = $('#insumos_check');
+        detalle = tabla.find('tbody');
+        detalle.empty();
+        boton_color = objeto.hasClass("btn-success");
+        id = objeto[0].id;
+        valor = id.substring(10, 18);
+        nombre_campo = "#insumos_sol_" + valor;
+        campo = $(nombre_campo);
+        insumos_texto = campo.text();
+        insumos = JSON.parse(insumos_texto);
+        insumos_requisitados = [];
+        numero_elemento = 0;
+        numero_grupo = 0;
+        grupo_ant = '';
+        sw = 0;
+        cambia_gpo = false;
+
+        for (var i = 0; i < insumos.length; i++) {
+            var elemento = insumos[i];
+
+            numero_elemento++;
+            nombre_grupo = elemento.nombre_grupo;
+
+            if (nombre_grupo != grupo_ant) {
+                cambia_gpo = true;
+                if (sw == 0) {
+                    numero_grupo = 1;
+                    sw = 1;
+                } else {
+                    numero_grupo++;
+                }
+                grupo_ant = nombre_grupo;
+            }
+            nuevoTr1 = $('<tr>');
+
+            colNombre = $('<td>').text(elemento.nombre_insumo);
+            colOpcion = $('<td hidden>').text(elemento.opcion);
+            colGrupo = $('<td hidden>').text(elemento.nombre_grupo);
+            colId = $('<td hidden>').text(elemento.id);
+            pedir = elemento.pedir;
+
+            colCheck = $('<td>').addClass('text-center');
+
+            if (elemento.opcion == '2') {
+                seleccion = $('<input>').attr('type', 'radio');
+                seleccion.attr('name', 'r_gpo_' + nombre_grupo + '_' + numero_grupo);
+                seleccion.attr('id', 'id_r_gpo_' + nombre_grupo + '_' + numero_elemento);
+                if (cambia_gpo) {
+                    nvoTrGpo = $('<tr>');
+                    columna1 = $('<td>').text('Selecciona:').addClass('negrita-italica text-center');
+                    columna2 = $('<td>').text(nombre_grupo).addClass('negrita-italica text-center');
+                    nvoTrGpo.append(columna1);
+                    nvoTrGpo.append(columna2);
+                    detalle.append(nvoTrGpo);
+                    cambia_gpo = false;
+                    seleccion.prop('checked', true);
+                }
+                if (boton_color) {
+                    if (pedir) {
+                        seleccion.prop('checked', true);
+                    } else {
+                        seleccion.prop('checked', false);
+                    }
+                }
+            } else {
+                seleccion = $('<input>').attr('type', 'checkbox').addClass('checkbox-medio form-check-input');
+                seleccion.attr('name', 'check_' + numero_elemento);
+                seleccion.attr('id', 'id_check_' + numero_elemento);
+                if (pedir) {
+                    seleccion.attr('checked', 'checked');
+                } else {
+                    seleccion.prop('checked', false);
+                }
+            }
+
+            colCheck.append(seleccion);
+
+            nuevoTr1.append(colId);
+            nuevoTr1.append(colOpcion);
+            nuevoTr1.append(colGrupo);
+            nuevoTr1.append(colNombre);
+            nuevoTr1.append(colCheck);
+
+            detalle.append(nuevoTr1);
+        }
+        $('#id_tabla_campo_insumo').val(nombre_campo);
+        $("#ventanaInsumos").show();
+    }
+    function elimina_fila(fila) {
+        id = fila[0].id;
+        valor = id.substring(4, 10);
+        $(".fila_" + valor).remove();
+        valida_datos();
+    }
+//    $('#id_cantidad').on('keyup', function (event) {
+//        event.preventDefault();
+//        valida_datos();
+//    });
+    $(document).ready(function () {
+        valida_datos();
+        $("#contador").val(0);
+        $("#id_mesa").val('{{mesa}}').prop('readonly', true);;
+        $("#id_observacion").val('{{observacion}}').prop('readonly', true);;
+        $('#id_mesa').addClass('text-center');
+    });
+</script>
+{% endif %}
+{% endblock %}

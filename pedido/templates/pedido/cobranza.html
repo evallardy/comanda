@@ -1,0 +1,98 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% block headJS %}
+<meta http-equiv="refresh" content="10">
+{% endblock %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block contenido %}
+<style>
+    .no-border {
+        border: none;
+        /* Opcionalmente, puedes añadir otros estilos para mejorar la apariencia */
+        outline: none;
+        /* Elimina el contorno al enfocar el campo */
+        box-shadow: none;
+        /* Elimina cualquier sombra */
+        font-size: 14px;
+    }
+</style>
+<div class="d-flex justify-content-center">
+    <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+      <h2 class="cuadro">Caja</h2>
+    </div>
+</div>
+<div class="container col-12">
+    <form>
+        <div class="row container text-center">
+            <div class="col-12 text-center">
+                <a href="{% url 'index' %}" class="btn btn-info cuadro-boton">Regresar</a>
+            </div>
+        </div>
+        <div class="container col-12 ">
+            <div class="col-12">
+                <table class="table table-striped cuadro caption-top col-12">
+                    <caption>
+                        <h3>Comandas</h3>
+                    </caption>
+                    <thead>
+                        <tr>
+                            <th class="col-2 text-center">
+                                Mesa
+                            </th>
+                            <th class="col-6 text-center">
+                                Descripción
+                            </th>
+                            <th class="col-2 text-center">
+                                Por pagar
+                            </th>
+                            <th class="col-2 text-center">
+                                Pagado
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mesa in cobranza %}
+                        <tr class="align-middle">
+                            <td class="text-center">
+                                {{mesa.mesa}}
+                            </td>
+                            <td>
+                                {{mesa.observacion}}
+                            </td>
+                            <td class="text-end">
+                                {% if mesa.por_pagar == 0 %}
+                                    0.00
+                                {% else %}
+                                    <a class="btn btn-info cuadro-pago-tabla"  href="{% url 'pago_comanda' mesa.id %}">
+                                        {{mesa.por_pagar|default_if_none:"0.00"}}
+                                    </a>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if mesa.pagado == 0 %}
+                                    0.00
+                                {% else %}
+                                    {{mesa.pagado}} 
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if servicio_cierra_perm %}
+                                <a href="#" class="btn btn-info" title="Terminada">
+                                  <img src="{% static 'core/img/atendida.svg' %}" width="20" />
+                                </a>
+                                {% endif %}
+                            </td>                    
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

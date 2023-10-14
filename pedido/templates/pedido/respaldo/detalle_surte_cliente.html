@@ -1,0 +1,402 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block estilo %}
+<style>
+    .promo {
+        font-weight: bold;
+        color: red;
+    }
+    .normal {
+        font-weight: normal;
+        color: black;
+    }
+</style>
+{% endblock %}
+{% block contenido %}
+<div class="row d-flex justify-content-center">
+    <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+        <h2 class="cuadro">Surtir Mi Comanda</h2>
+    </div>
+</div>
+<div>
+    <div class="container cuadro col-11 col-xs-9 col-sm-9 col-md-9 col-lg-8 col-xl-7 col-xxl-6">
+        <form method="POST" id="formulario">
+            {% csrf_token %}
+            <div class="col-4">
+                <label for="">Mesa</label>
+                <input type="text" name="mesa" id="id_mesa" class="form-control" readonly>
+            </div>
+            <div class="col-12">
+                <label for="">Observación</label>
+                <input type="text" name="observacion" id="id_observacion" class="form-control" readonly>
+            </div>
+            <div class="row d-flex justify-content-around">
+                <button type="submit" class="btn btn-info cuadro-boton col-5" id="id-continuar">Guardar</button>
+                <a href="{% url 'index'  %}" class="btn btn-danger cuadro-boton col-5">Cancelar</a>
+            </div>
+            <hr style="border-color: darkblue; border-width: 2px;">
+            <div class="row align-items-middle">
+                <div class="form-group col-9 ">
+                    <label>Producto</label>
+                    <select name="producto" id="id_producto" class="form-control">
+                        <option value=0>---------</option>
+                        {% for p in producto_cmb %}
+                        {% if p.promocion == 1 %}
+                        <option value="{{ p.id }}" class="promo">{{ p.nombre }} - promoción</option>
+                        {% else %}
+                        <option value="{{ p.id }}">{{ p.nombre }}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                    <label style="color: red;" id="error_producto">Selecciona producto</label>
+                </div>
+                <div class="form-group col-3">
+                    <a href="#" class="btn btn-info cuadro-boton" id="id-continuar" style="margin-top: 20px;"
+                        onclick="agregaRegistro()">Agrega</a>
+                </div>
+            </div>
+            <div class="row" style="margin-top: 20px;">
+                <div class="col-12 ">
+                    <textarea type="textarea" id="id_breve" name="breve" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="row" style="margin-top: 20px;">
+                <div class="col-12 d-flex justify-content-center ">
+                    <table class="cuadro" style="border-color: blue">
+                        <thead>
+                            <tr>
+                                <th class="col-4" style="text-align: center;">Precio $</th>
+                                <th class="col-4" style="text-align: center;">Cantidad</th>
+                                <th class="col-4" style="text-align: center;">Importe $</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="align-top text-center">
+                                    <input type="text" class="precio-producto" name="precio_unitario"
+                                        id="id_precio_unitario" readonly style="text-align: center;">
+                                </td>
+                                <td class="align-top text-center">
+                                    <input type="text" class="cantidad-producto" name="cantidad" id="id_cantidad"
+                                        style="text-align: center;" onfocusout="reformatear('id_cantidad')"
+                                        onkeypress="return valideKey(event);"><br>
+                                    <label style="color: red;" id="error_cantidad">Tecleé cantidad</label>
+                                </td>
+                                <td class="align-top text-center">
+                                    <input type="text" class="precio-producto" name="importe" id="id_importe" readonly
+                                        style="text-align: center;" onfocusout="reformatear('id_importe')"
+                                        onkeypress="return valideKey(event);">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <hr class="solicitud-productos">
+            <div id="campos-adicionales" class="row col-12 d-flex justify-content-center"></div>
+            <hr class="solicitud-productos">
+            <div class="col-12">
+                <table class="table table-striped caption-top col-12" id="listaElementos">
+                    <caption>
+                        <h3>Especificaciones</h3>
+                    </caption>
+                    <thead class="col-12">
+                        <tr class="text-center col-12">
+                            <th class="col-4">
+                                Nombre
+                            </th>
+                            <th class="col-1">
+                                Cant.
+                            </th>
+                            <th class="col-6">
+                                Detalle
+                            </th>
+                            <th class="col-1">
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="elementosPedidos">
+                    </tbody>
+                </table>
+            </div>
+            <hr style="border-color: darkblue; border-width: 2px;">
+            <div class="row d-flex justify-content-around">
+                <button type="submit" class="btn btn-info cuadro-boton col-5" id="id-continuar">Guardar</button>
+                <a href="{% url 'index'  %}" class="btn btn-danger cuadro-boton col-5">Cancelar</a>
+            </div>
+            <input type="text" name="lista" id="id_lista" value="" hidden>
+        </form>
+    </div>
+</div>
+<script>
+    function actualiza_envio_tabla(){
+        var elementos = [];
+        $('#listaElementos tbody tr').each(function () {
+            nombre = $(this).find('textarea[id^="IdNomProducto"]').val();
+            cantidad = $(this).find('input[id^="IdCantidad"]').val();
+            productoId = $(this).find('input[id^="IdProducto"]').val();
+            precio = $(this).find('input[id^="IdPrecio"]').val();
+            importe = $(this).find('input[id^="IdImporte"]').val();
+            jsonElemento = $(this).find('input[id^="IdJsonElemento"]').val();
+
+            var elemento = {
+                nombre: nombre,
+                cantidad: cantidad,
+                productoId: productoId,
+                precio: precio,
+                importe: importe,
+                jsonElemento: jsonElemento
+            };
+
+            elementos.push(elemento);
+        });
+        $('#id_lista').val(JSON.stringify(elementos));
+        $(this).submit();
+    }
+    function agregaRegistro() {
+        selectedOption = $("#id_producto").val();
+        cantidad = parseFloat($("#id_cantidad").val());
+        valor = $('#id_cantidad').val();
+        if (selectedOption != "0") {
+            if (!(isNaN(valor) || valor == '' || valor == '0')) {
+                idProducto = $("#id_producto option:selected").val();
+                idNomProducto = $("#id_producto option:selected").text();
+                idCantidad = cantidad;
+                idPrecio = parseFloat($("#id_precio_unitario").val());
+                idImporte = parseFloat($("#id_importe").val());
+                observacion = $("#observacion_elemento").val();
+                idNota = (typeof observacion !== 'undefined') ? observacion : "";
+                idUsuario = '{{usuario}}';
+
+                idElementos = [];
+                tbody = $('#notas tbody');
+                registro = 0;
+                descElementos = '';
+                negritas_i = "~";
+                negritas_f = "^";
+                tbody.find('tr').each(function () {
+                    registro++;
+                    producto = $('#nombre_' + registro).val();
+                    opcionNota = $("input[name='elemen_" + registro + "']:checked").val();
+                    elemento = {
+                        "insumo": producto,
+                        "cantidad": opcionNota.toUpperCase()
+                    };
+                    idElementos.push(elemento);
+                    descElementos += producto + " : " + opcionNota + '\n';
+                });
+                if (idNota != "") {
+                    elemento = {
+                        "insumo": 'Nota',
+                        "cantidad": idNota.toUpperCase()
+                    };
+                    idElementos.push(elemento);
+                    descElementos += "Nota : " + idNota;
+                }
+                elementosJSON = JSON.stringify(idElementos);
+
+                tbody = document.getElementById('elementosPedidos');
+                cantidadRegistros = tbody.getElementsByTagName('tr').length;
+                cantidadRegistros++;
+
+                var $deleteButton = $("<button>", {
+                    class: "delete-button col-1 fondo-transparente",
+                    click: function () {
+                        // Lógica para eliminar la fila
+                        $(this).closest("tr").remove();
+                    }
+                }).css({
+                    border: "none",
+                });
+
+                var $deleteIcon = $("<img>", {
+                    src: "{% static 'core/img/eliminar.svg' %}",
+                    alt: "Eliminar",
+                    class: "delete-icon fondo-transparente"
+                }).css({
+                    width: "15px",
+                    height: "15px",
+                });
+
+                $deleteButton.empty().append($deleteIcon);
+
+                $tbody = $("#listaElementos tbody");
+                $row = $("<tr>").addClass("col-12");
+                $row.append($("<td>").addClass("col-5")
+                    .append($("<textarea>").attr("readOnly", "readOnly")
+                        .attr("id", "IdNomProducto_" + cantidadRegistros)
+                        .attr("rows", "4").addClass("input-elemento")
+                        .addClass("col-12").val(idNomProducto)));
+
+                $row.append($("<td>").addClass("col-1")
+                    .append($("<input class='col-3'>").attr("readOnly", "readOnly")
+                        .attr("id", "IdCantidad_" + cantidadRegistros)
+                        .addClass("input-elemento")
+                        .addClass("text-center")
+                        .addClass("col-12").val(idCantidad)));
+
+                $row.append($("<td>").addClass("col-5")
+                    .append($("<textarea>").attr("readOnly", "readOnly")
+                        .attr("id", "IdNomElemento_" + cantidadRegistros)
+                        .attr("rows", "4")
+                        .addClass("myTextarea")
+                        .addClass("input-elemento")
+                        .addClass("col-12").val(descElementos)));
+
+                $row.append($("<td>").addClass("col-1")
+                    .addClass("col-6")
+                    .append($deleteButton));
+
+                $row.append($("<td hidden>")
+                    .append($("<input>").attr("readOnly", "readOnly")
+                        .attr("id", "IdProducto_" + cantidadRegistros)
+                        .addClass("input-elemento").val(idProducto)));
+
+                $row.append($("<td hidden>")
+                    .append($("<input>").attr("readOnly", "readOnly")
+                        .attr("id", "IdPrecio_" + cantidadRegistros)
+                        .addClass("input-elemento").val(idPrecio)));
+
+                $row.append($("<td hidden>")
+                    .append($("<input>").attr("readOnly", "readOnly")
+                        .attr("id", "IdImporte_" + cantidadRegistros)
+                        .addClass("input-elemento").val(idImporte)));
+
+                $row.append($("<td hidden>")
+                    .append($("<input>").attr("readOnly", "readOnly")
+                        .attr("id", "IdJsonElemento_" + cantidadRegistros)
+                        .addClass("input-elemento").val(elementosJSON)));
+
+                $tbody.append($row);
+
+                $("#id_producto").val(0);
+                $("#id_cantidad").val(0);
+                $('#id_producto').trigger('change');
+                $("#id_lista").val('');
+                actualiza_envio_tabla();
+            }
+        }
+
+    }
+    $('.delete-btn').on('click', function () {
+        $(this).closest('tr').remove();
+    });
+    $(document).ready(function () {
+        var $button = $('<button>', {
+            text: 'Eliminar',
+            class: 'delete-btn'
+        });
+        $('.delete-td').append($button);
+        $("#id_mesa").val('{{mesa}}');
+        $("#id_observacion").val('{{observacion}}');
+        $('#id_breve').attr('rows', '3');
+        $('#id_producto').change(function () {
+            var selectedOption = $(this).find('option:selected');
+            var camposAdicionales = $('#campos-adicionales');
+
+            // Limpia los campos adicionales existentes
+            camposAdicionales.empty();
+
+            // Verifica si se seleccionó una opción válida
+            if (selectedOption.val() !== '0') {
+                $('#error_producto').html('');
+                var productoId = selectedOption.val();
+
+                // Realiza la solicitud AJAX para obtener el JSON del producto seleccionado
+                $.ajax({
+                    url: '/pedido/obtener_json_producto/' + productoId + '/',
+                    dataType: 'json',
+                    success: function (data) {
+                        // Itera sobre los campos adicionales y crea los inputs
+                        $("#id_precio_unitario").val(data.precio);
+                        $("#id_breve").val(data.breve);
+                        $('#id_precio_unitario').trigger('change');
+                        var titulos = '<table class="container col-12 table table-striped" style="margin-left: 15px;" id="notas"><thead><tr>' +
+                            '<th class="col-4"></th>' +
+                            '<th class="col-2 text-center">Sin</th>' +
+                            '<th class="col-2 text-center">Poca</th>' +
+                            '<th class="col-2 text-center">Normal</th>' +
+                            '<th class="col-2 text-center">Mucha</th></tr></thead><tbody>';
+                        var campo_observacion = '<div class="row"><label class="col-2">Nota</label><input type="text" class="form-control col-10" id="observacion_elemento"></div>';
+                        var radios = "";
+                        var elementos = "";
+                        if (data.campos_adicionales === null) {
+                            camposAdicionales.append(campo_observacion);
+                        } else {
+                            for (var i = 1; i <= data.campos_adicionales.length; i++) {
+                                var campo = data.campos_adicionales[i - 1];
+                                var radios = '<td class="col-2 text-center"><input type="radio" name="elemen_' + i + '" value="Sin" title="Sin"></td>' +
+                                    '<td class="col-2 text-center"><input type="radio" name="elemen_' + i + '" value="Poco" title="Poco"></td>' +
+                                    '<td class="col-2 text-center"><input type="radio" name="elemen_' + i + '" value="Normal" title="Normal" checked></td>' +
+                                    '<td class="col-2 text-center"><input type="radio" name="elemen_' + i + '" value="Mucho" title="Mucho"></td></tr>';
+                                elementos += '<tr>' +
+                                    '<td class="col-4"><input type="text" class="lista-producto" id="nombre_' + i + '" value="' + campo + '"></td> ' + radios;
+                                if (i == data.campos_adicionales.length) {
+                                    camposAdicionales.append(titulos + elementos + '</tbody></table>' + campo_observacion);
+                                }
+                            }
+                        }
+                    },
+                    error: function (xhr, textStatus, errorThrown) {
+                        console.log('Error:', errorThrown);
+                    }
+                });
+            } else {
+                $('#error_producto').html('Seleccione producto');
+                $("#id_precio_unitario").val(0);
+                $('#id_precio_unitario').trigger('change');
+            }
+        });
+        function ejecutarKeyUp() {
+            cantidad = parseFloat($("#id_cantidad").val());
+            valor = $('#id_cantidad').val();
+            prec = $('#id_precio_unitario').val();
+            if (isNaN(valor) || isNaN(prec) || valor == '' || valor == '0' || prec == '' || prec == '0') {
+                $('#id_importe').val(0);
+                if (valor > '0') {
+                    $('#error_cantidad').html('');
+                } else {
+                    $('#error_cantidad').html('Tecleé cantidad');
+                }
+            } else {
+                $('#error_cantidad').html('');
+                precio = parseFloat($("#id_precio_unitario").val());
+                importe = cantidad * precio;
+                $('#id_importe').val(importe);
+            }
+        }
+        $('#id_cantidad').on('keyup', function (event) {
+            ejecutarKeyUp();
+            $('#id_importe').focus();
+            this.focus();
+        });
+        $('#id_precio_unitario').on('change', function (event) {
+            cantidad = parseFloat($("#id_cantidad").val());
+            valor = $('#id_cantidad').val();
+            prec = $(this).val();
+            if (isNaN(valor) || isNaN(prec) || valor == '' || valor == '0' || prec == '' || prec == '0') {
+                $('#id_importe').val(0);
+                if (valor > '0') {
+                    $('#error_cantidad').html('');
+                } else {
+                    $('#error_cantidad').html('Tecleé cantidad');
+                }
+            } else {
+                $('#error_cantidad').html('');
+                precio = parseFloat($(this).val());
+                importe = cantidad * precio;
+                $('#id_importe').val(importe);
+                $('#id_importe').focus();
+                $('#id_producto').focus();
+
+            }
+        });
+    });
+</script>
+{% endblock %}

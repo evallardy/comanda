@@ -1,0 +1,23 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block contenido %}
+<h1>Nueva Comanda</h1>
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <h2>Detalles</h2>
+    {{ detalle_formset.management_form }}
+    {% for form in detalle_formset %}
+    {{ form.as_table }}
+    {% endfor %}
+
+    <button type="submit">Guardar</button>
+</form>
+{% endblock %}

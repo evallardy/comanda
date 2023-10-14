@@ -1,0 +1,106 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% block headJS %}
+<meta http-equiv="refresh" content="10">
+{% endblock %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block contenido %}
+<style>
+    .no-border {
+        border: none;
+        /* Opcionalmente, puedes añadir otros estilos para mejorar la apariencia */
+        outline: none;
+        /* Elimina el contorno al enfocar el campo */
+        box-shadow: none;
+        /* Elimina cualquier sombra */
+        font-size: 14px;
+    }
+</style>
+<form>
+    <div class="row d-flex justify-content-center" style="padding-top: 25px;">
+        <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+            <a href="{% url 'index' %}" class="btn btn-info cuadro-boton">Regresar</a>
+        </div>
+    </div>
+    <div class="row d-flex justify-content-center" style="padding-top: 25px; font-size: 20px; font-weight: bold;">
+        <div class="col-3 col-xs-3 col-sm-3 col-md-3 col-lg-2 col-xl-2 col-xxl-1 text-center">
+            Por pagar<br>
+            <input type="text" id="total_pago" readonly class="text-center no-border col-12" style="font-size: 20px; font-weight: bold; box-shadow: 0 0 10px #000;
+                border-radius: 10px;" value="{{ importe_por_pagar.total_importe|default:0 }}">
+        </div>
+        <div class="col-3 col-xs-3 col-sm-3 col-md-3 col-lg-2 col-xl-2 col-xxl-1 text-center">
+            Pagado<br>
+            <input type="text" id="total_pago" readonly class="text-center no-border col-12" style="font-size: 20px; font-weight: bold; box-shadow: 0 0 10px #000;
+                border-radius: 10px;" value="{{ importe_pagado.total_importe|default:0 }}">
+        </div>
+        <div class="col-3 col-xs-3 col-sm-3 col-md-3 col-lg-2 col-xl-2 col-xxl-1 text-center">
+            Total<br>
+            <input type="text" id="total_pago" readonly class="text-center no-border col-12" style="font-size: 20px; font-weight: bold; box-shadow: 0 0 10px #000;
+                border-radius: 10px;" value="{{ importe_total.total_importe|default:0 }}">
+        </div>
+    </div>
+    <div class="d-flex justify-content-center">
+        <div class="col-11 col-xs-11 col-sm-11 col-md-9 col-lg-9 col-xl-7 col-xxl-6">
+            <table class="table cuadro caption-top">
+                <caption>
+                    <h3>Comanda de la mesa - {{ mesa_id }}</h3>
+                </caption>
+                <thead>
+                    <tr class="text-center">
+                        <th class="col-4">
+                            Producto
+                        </th>
+                        <th class="col-2">
+                            Cantidad
+                        </th>
+                        <th class="col-2">
+                            Precio
+                        </th>
+                        <th class="col-2">
+                            Importe
+                        </th>
+                        <th class="col-2 align-middle">
+                            Estatus
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mesa in elementos %}
+                    <tr>
+                        <td>
+                            {{mesa.nom_producto}}
+                        </td>
+                        <td class="text-center">
+                            {{mesa.cantidad}}
+                        </td>
+                        <td class="text-end">
+                            {{mesa.precio_unitario}}
+                        </td>
+                        <td class="text-end">
+                            <input type="text" class="form-control text-end no-border" value="{{mesa.importe}}" readonly
+                                name="importe_{{mesa.id}}" id="id_importe_{{mesa.id}}" style="padding: 0;">
+                        </td>
+                        <td class="text-center">
+                            {% if mesa.estatus == 1 %}
+                            Elaborando
+                            {% elif mesa.estatus == 2 %}
+                            Por entregar
+                            {% elif mesa.estatus == 3 %}
+                            Por pagar
+                            {% else %}
+                            Pagado
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</form>
+{% endblock %}

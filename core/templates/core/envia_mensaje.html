@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- ... otros encabezados ... -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.css">
+</head>
+<body>
+    <!-- ... contenido de la página ... -->
+
+    {% if show_alert %}
+    <script>
+        Swal.fire({
+            title: '{{ alert_title }}',
+            text: '{{ alert_text }}',
+            icon: 'success',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "{% url 'index' %}";
+            }
+        });
+    </script>
+    {% endif %}
+</body>
+</html>

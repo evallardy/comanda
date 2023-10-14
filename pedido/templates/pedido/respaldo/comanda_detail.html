@@ -1,0 +1,34 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block contenido %}
+  <h1>Detalle de Comanda</h1>
+  <p>Mesa: {{ comanda.mesa }}</p>
+  <p>Observación: {{ comanda.observacion }}</p>
+  <h2>Detalles</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Cantidad</th>
+        <th>Precio unitario</th>
+        <th>Observación</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for detalle in comanda.detalle_set.all %}
+        <tr>
+          <td>{{ detalle.producto }}</td>
+          <td>{{ detalle.cantidad }}</td>
+          <td>{{ detalle.precio_unitario }}</td>
+          <td>{{ detalle.observacion }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block contenido %}
+<div class="row d-flex justify-content-center">
+    <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+        <h2 class="cuadro">Reporte diario</h2>
+    </div>
+</div>
+<div class="container cuadro col-10 col-xs-7 col-sm-7 col-md-7 col-lg-6 col-xl-5 col-xxl-4">
+    <div class="row d-flex justify-content-around">
+        <a href="{% url 'consultas'  %}" class="btn btn-info cuadro-boton col-5">Regresar</a>
+    </div>
+    <hr>
+    <div class="d-flex justify-content-center">
+        <table class="table table-striped col-12" style="border-color: blue">
+            <thead>
+                <tr>
+                    <th class="text-center col-3"></th>
+                    <th class="text-center col-3">Total</th>
+                    <th class="text-center col-3">Bar</th>
+                    <th class="text-center col-3">Cocina</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="col-5">Por pagar</td>
+                    <td class="text-end">{{ reporte_diario.importe_entregado|default_if_none:"0.00" }}</td>
+                    <td class="text-end">{{ reporte_diario.importe_entregado_bar|default_if_none:"0.00" }}</td>
+                    <td class="text-end">{{ reporte_diario.importe_entregado_cocina|default_if_none:"0.00" }}</td>
+                </tr>
+                <tr>
+                    <td>Pagado</td>
+                    <td class="text-end">{{ reporte_diario.importe_pagado|default_if_none:"0.00" }}</td> 
+                    <td class="text-end">{{ reporte_diario.importe_pagado_bar|default_if_none:"0.00" }}</td>
+                    <td class="text-end">{{ reporte_diario.importe_pagado_cocina|default_if_none:"0.00" }}</td>
+                </tr>
+                <tr>
+                    <td>Total</td>
+                    <td class="text-end">{{ reporte_diario.importe_pagado_total|default_if_none:"0.00" }}</td>
+                    <td class="text-end">{{ reporte_diario.importe_pagado_bar_total|default_if_none:"0.00" }}</td>
+                    <td class="text-end">{{ reporte_diario.importe_pagado_cocina_total|default_if_none:"0.00" }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <hr style="border-color: darkblue; border-width: 2px;">
+</div>
+{% endblock %}

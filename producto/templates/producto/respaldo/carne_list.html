@@ -1,0 +1,58 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block contenido %}
+<div class="d-flex justify-content-center">
+    <div class="cuadro col-8" style="padding: 20px;">
+        {% if hay %}
+        <table class="table table-striped caption-top">
+            <caption>
+                <h3>Carnes</h3>
+                <div class="col-8 col-xs-6 col-sm-6 col-md-5 col-lg-4 col-xl-4 col-xxl-3 text-center">
+                    <a href="{% url 'carne_create' %}" class="btn btn-info cuadro-boton">Agrega Carne</a>
+                </div>
+            </caption>
+            <thead>
+                <tr>
+                    <th class="text-center">Nombre</th>
+                    <th class="col-2"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for carne in carnes %}
+                <tr>
+                    <td class="align-middle">{{ carne.nombre }}</td>
+                    <td>
+                        <a href="{% url 'carne_edit' carne.id %}" class="btn btn-info" title="Editar">
+                            <img src="{% static 'core/img/editar.svg' %}" width="20" />
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <h3>Carnes</h3>
+        <ul class="col-12">
+            <li>No hay carnes registradas.</li>
+            <br>
+            <div class="row col-12">
+                <div class="col-10 col-xs-8 col-sm-8 col-md-6 col-lg-5 col-xl-5 col-xxl-4 text-center">
+                    <a href="{% url 'carne_create' %}" class="btn btn-info cuadro-boton">Agrega carne</a>
+                </div>
+            </div>
+        </ul>
+        {% endif %}
+    </div>
+</div>
+<div class="d-flex justify-content-center">
+    <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+        <a href="{% url 'producto_list' %}" class="btn btn-info cuadro-boton">Regresar</a>
+    </div>
+</div>
+{% endblock %}

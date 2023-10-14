@@ -1,0 +1,69 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block headJS %}
+<meta http-equiv="refresh" content="10">
+{% endblock %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block contenido %}
+{% if user.is_authenticated and bar_perm %}
+<div class="d-flex justify-content-center">
+  <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+    <h2 class="cuadro">Para elaborar Bar</h2>
+  </div>
+</div>
+<div class="d-flex justify-content-center">
+  <div class="col-4 text-center">
+    <a href="{% url 'index' %}" class="btn btn-info cuadro-boton">Regresar</a>
+  </div>
+</div>
+<div class="d-flex justify-content-center">
+  <div class="cuadro col-12 col-xs-11 col-sm-10 col-md-10 col-lg-9 col-xl-8 col-xxl-8">
+    <table class="table table-striped caption-top col-12" id="tabla-bar">
+      <caption>
+        <h3>Solicitudes</h3>
+      </caption>
+      <thead>
+        <tr class="text-center">
+          <th class="col-1">Mesa</th>
+          <th class="col-3">Producto</th>
+          <th class="col-6">Especificación</th>
+          <th class="col-1"></th>
+        </tr> 
+      </thead>
+      <tbody>
+        {% for productos in bar %}
+        <tr class="text-center">
+          <td>{{productos.mesa}}</td>
+          <td>{{productos.nom_producto}}</td>
+          <td class="text-start">
+            {% for insumo in productos.especificacion %}
+              {% if insumo.pedir%}
+                {{ insumo.nombre_insumo }}<br>
+              {% endif %}
+            {% endfor %}
+          </td>
+          <td>
+            {% if bar_termina_perm %}
+            <a href="{% url 'termina_bar' productos.id %}" class="btn btn-info" title="Terminada">
+              <img src="{% static 'core/img/atendida.svg' %}" width="20" />
+            </a>
+            {% endif %}
+            {% if bar_cancela_perm and productos.total == productos.producto_sin_entregar %}
+            <a href="{% url 'cancela_producto_bar' productos.id %}" class="btn btn-danger" title="Cancela elaboración">
+              <img src="{% static 'core/img/cancelar.svg' %}" width="20" />
+            </a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

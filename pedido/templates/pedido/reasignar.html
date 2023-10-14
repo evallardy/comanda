@@ -1,0 +1,262 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block headJS %}
+<!-- <meta http-equiv="refresh" content="30">  -->
+{% endblock %}
+{% block estilo %}
+<style>
+    .enviarFormulario.disabled {
+        opacity: 0.5;
+        /* Reduce la opacidad para indicar que está desactivado */
+        pointer-events: none;
+        /* Evita que se pueda hacer clic en el botón */
+        /* Agrega otros estilos para reflejar visualmente el estado desactivado */
+    }
+
+    /* Estilo para ocultar la ventana modal por defecto */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+    }
+
+    /* Estilo para el contenido de la ventana modal */
+    .modal-content {
+        background-color: #fff;
+        border-radius: 10px;
+        width: 300px;
+        height: 500px;
+        padding: 20px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    /* Estilo para el botón de cierre de la ventana modal */
+    .close {
+        float: right;
+        cursor: pointer;
+    }
+
+    .modal-header {
+        position: absolute;
+        top: 10%;
+        left: 50%;
+        width: 300px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        background-color: #f0f0f0;
+        /* Cambia el color de fondo si es necesario */
+    }
+
+    .modal-header button {
+        margin-right: 10px;
+        /* Ajusta el margen entre los botones si es necesario */
+    }
+
+    .negrita-italica {
+        font-weight: bold;
+        font-style: italic;
+    }
+</style>
+{% endblock %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block contenido %}
+{% if user.is_authenticated and reasignar_perm %}
+<div class="col-12">
+  <form action="">
+    {% csrf_token %}
+    <div id="ventanaMesas" class="modal">
+      <div class="modal-content" style="padding: 5px; max-height: 80vh; overflow-y: auto;">
+        <!-- Contenido de la ventana modal (tabla, etc.) -->
+        <div class="container col-12">
+          <button class="close btn btn-info col-5 cerrarModal">Regresar</button>
+          <button class="guarda_insumos btn btn-info col-5 guardaModal">Guardar</button>
+        </div>
+        <div class="container col-12">
+          <table class="table table-striped table-hover align-middle" id="mesas_check">
+            <thead>
+              <tr>
+                <th class="col-9">Id</th>
+                <th class="col-3">Mesa</th>
+                <th class="col-3">Observación</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+        <div class="container col-12">
+          <button class="close btn btn-info col-5 cerrarModal">Regresar</button>
+          <button class="guarda_insumos btn btn-info col-5 guardaModal">Guardar</button>
+          <input type="text" name="producto_mod" id="id_producto_mod" hidden>
+        </div>
+      </div>
+    </div>
+    <div class="container col-12 col-xs-10 col-sm-8 col-md-6 col-lg-6 col-xl-4 col-xxl-4">
+      <div class="container col-8 text-center cuadro">
+        <h2>Para reasignar</h2>
+      </div>
+      <div class="container col-12 text-center">
+        <a href="{% url 'index' %}" class="btn btn-info cuadro-boton col-3">Regresar</a>
+        <a href="{% url 'reasignar' %}" 
+          class="btn btn-info cuadro-boton col-3 cancelar-enlace">Actualizar</a>
+      </div>
+    </div>
+    <div class="container cuadro col-11 col-xs-10 col-sm-8 col-md-6 col-lg-6 col-xl-4 col-xxl-4">
+      <table class="table table-striped caption-top col-12" id="tabla-reasignar">
+        <caption>
+          <h3>Comandas</h3>
+        </caption>
+        <thead>
+          <tr class="text-center">
+            <th class="col-3">Producto</th>
+            <th class="col-6">Especificación</th>
+            <th class="col-1"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for productos in reasignar %}
+          <tr class="text-center">
+            <td>{{productos.nom_producto}}</td>
+            <td class="text-start">
+              {% for insumo in productos.especificacion %}
+              {% if insumo.pedir%}
+              {{ insumo.nombre_insumo }}<br>
+              {% endif %}
+              {% endfor %}
+            </td>
+            <td>
+              {% if reasignar_termina_perm %}
+              <button class="btn btn-info btn-reasignar" title="Reasigna" 
+                id="id_reasigna_{{productos.id}}" name="reasigna_{{productos.id}}">
+                <img src="{% static 'core/img/atendida.svg' %}" width="20" />
+              </button>
+                {% endif %}
+                {% if reasignar_cancela_perm %}
+                <a href="{% url 'cancela_producto_reasignar' productos.id %}" class="btn btn-danger"
+                  title="Cancela difinitivamente">
+                  <img src="{% static 'core/img/cancelar.svg' %}" width="20" />
+                </a>
+                {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </form>
+</div>
+<script>
+  $(document).ready(function () {
+
+  });
+  $("#id_actualizar").click(function () {
+
+
+  });
+  function abre_ventana() {
+    event.preventDefault();
+    $("#ventanaMesas").show();
+  }
+  $(".cerrarModal").click(function () {
+    event.preventDefault();
+    $("#ventanaMesas").hide();
+  });
+  $(".guardaModal").click(function () {
+    event.preventDefault();
+    id_producto = $("#id_producto_mod").val();
+    $('#mesas_check tbody tr').each(function () {
+      fila = $(this);
+      comanda_seleccionada = fila.find('td:eq(0)').text();
+      input = fila.find('td:eq(3) input:first');
+      if (input.is(":checked")) {
+        id_comanda = comanda_seleccionada;
+      }
+    });
+    var csrfToken = $("input[name=csrfmiddlewaretoken]").val();
+    $.ajax({
+      url: '/pedido/reasignar_producto/' + id_comanda + '/' + id_producto + '/',
+      type: 'POST',
+      dataType: 'json',
+      contentType: 'application/json',
+      headers: {
+        'X-CSRFToken': csrfToken // Agrega el token CSRF como encabezado
+      },
+      success: function (data) {
+        var actualizo = data.actualizo;
+        $(".cancelar-enlace").click();
+      },
+      cod_error: function (xhr, textStatus, cod_errorThrown) {
+        console.log('cod_error:', cod_errorThrown);
+      }
+    });
+
+    $("#ventanaMesas").hide();
+  });
+  $(".btn-reasignar").click(function (event) {
+    event.preventDefault(); // Evitar que se ejecute el evento por defecto (por ejemplo, redireccionar)
+    // Declarar las variables con 'let' para limitar su alcance al bloque actual
+    let objeto = $(this);
+    let id = objeto.attr('id'); // Usar .attr('id') en lugar de [0].id para obtener el ID
+    id_producto = id.substring(12,20);
+    $("#id_producto_mod").val(id_producto);
+    // Usar el método .find() para buscar el elemento dentro de #mesas_check
+    let tabla = $('#mesas_check');
+    let detalle = tabla.find('tbody');
+    detalle.empty(); // Limpia el contenido de tbody
+    $.ajax({
+      url: '/pedido/mesas/',
+      type: 'GET',
+      dataType: 'json',
+      contentType: 'application/json',
+      success: function (response) { // Cambiar 'data' a 'response' para reflejar el nombre correcto
+        var listado = response.listado;
+        for (var i = 0; i < listado.length; i++) {
+          var elemento = listado[i];
+          var id = elemento.id;
+          var mesa = elemento.mesa;
+          var observacion = elemento.observacion;
+          var nuevoTr = $('<tr>');
+          var nuevoTd1 = $('<td>').text(id).addClass('col-2');
+          var nuevoTd2 = $('<td>').text(mesa).addClass('col-2');
+          var nuevoTd3 = $('<td>').text(observacion).addClass('col-8');
+          nuevoTr.append(nuevoTd1);
+          nuevoTr.append(nuevoTd2);
+          nuevoTr.append(nuevoTd3);
+          // Crear elementos para la columna de checkboxes
+          var colCheck = $('<td>').addClass('col-2');
+          seleccion = $('<input>').attr('type', 'radio');
+          seleccion.attr('name', 'r_gpo');
+          seleccion.attr('id', 'id_r_gpo_' + id);
+          if (i == 0) {
+            seleccion.prop('checked', true);
+          } else {
+            seleccion.prop('checked', false);
+          }
+          colCheck.append(seleccion);
+          nuevoTr.append(colCheck);
+          detalle.append(nuevoTr); // Agregar la fila a tbody
+          abre_ventana();
+        }
+      },
+      error: function (xhr, textStatus, errorThrown) { // Usar 'error' en lugar de 'cod_error'
+        console.log('Error:', errorThrown);
+      }
+    });
+  });
+</script>
+{% endif %}
+{% endblock %}

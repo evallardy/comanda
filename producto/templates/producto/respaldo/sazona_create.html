@@ -1,0 +1,30 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block contenido %}
+<div class="d-flex justify-content-center" style="padding: 20px;">
+    <div class="cuadro col-10" style="padding: 20px;">
+        <h1>{{ accion }} Sazonador</h1>
+        <form method="post">
+            {% csrf_token %}
+            <table>
+                {{ form.as_table }}
+            </table>
+            <br>
+            <div class="row col-12">
+                <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+                    <button type="submit" class="btn btn-info cuadro-boton">Guardar</button>
+                </div>
+                <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+                    <a href="{% url 'carne_list' %}" class="btn btn-info cuadro-boton">Regresar</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,240 @@
+{% extends "core/base.html" %}
+{{ form.media }}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block contenido %}
+{% if user.is_authenticated %}
+{% if catalogo_agregar_perm or catalogo_modificar_perm %}
+<div class="row d-flex justify-content-center">
+    <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+        <h2 class="cuadro">Producto</h2>
+    </div>
+</div>
+<div class="row text-center">
+    <h4 style="color: rgb(11, 125, 231);">{{accion}}</h4>
+    <div class="container cuadro col-11 col-xs-9 col-sm-9 col-md-9 col-lg-8 col-xl-7 col-xxl-6">
+        <form method="POST" class="row g-3" id="formulario">
+            {% csrf_token %}
+            <div class="row d-flex justify-content-around" style="margin-top: 10px;">
+                <button type="submit" class="btn btn-info cuadro-boton col-5">Guarda</button>
+                <a href="{% url 'producto_list' %}" class="btn btn-info cuadro-boton col-5">Regresar</a>
+            </div>
+            <div class="col-4">
+                {{form.nombre|as_crispy_field}}
+            </div>
+            <div class="col-4">
+                {{form.tipo|as_crispy_field}}
+            </div>
+            <div class="col-4">
+                {{form.precio|as_crispy_field}}
+            </div>
+            <div class="col-12">
+                {{form.breve|as_crispy_field}}
+            </div>
+            <div class="row" id="solo_bar">
+                <hr>
+                <div class="row col-12 col-xs-11 col-sm-11 col-md-11 col-lg-10 col-xl-9 col-xxl-9">
+                    <h3>Selección</h3>
+                </div>
+            </div>
+            <div class="row" id="solo_cocina">
+                <hr>
+                <div class="row col-12 col-xs-11 col-sm-11 col-md-11 col-lg-10 col-xl-9 col-xxl-9">
+                    <h3>Selección</h3>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <label class="col-2" style="margin-top: 5px; font-weight: bold;">Detalle</label>
+                <input type="checkbox" name="detalle" id="id_detalle" 
+                    class="form-check-input checkbox-large existencia">
+            </div>
+            <div class="row" id="solo_detalle" style="padding-top: 10px;">
+                Detalle
+            </div>
+            <hr>
+            <div class="row d-flex justify-content-around">
+                <button type="submit" class="btn btn-info cuadro-boton col-5">Guarda</button>
+                <a href="{% url 'producto_list' %}" class="btn btn-info cuadro-boton col-5">Regresar</a>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    var accion = "{{accion}}";
+    $('#id_precio').on('focusout', function () {
+        reformatear('id_precio');
+    });
+    $('#id_precio').on('keypress', function (event) {
+        return valideKey(event);
+    });
+    $("#id_detalle").change(function () {
+        var isChecked = $(this).prop("checked");
+        if (isChecked) {
+            presenta();
+            $("#solo_detalle").show();
+        } else {
+            $("#solo_detalle").hide();
+        }
+    });
+    $(".complementos").change(function () {
+        presenta();
+    });
+    function presenta() {
+        var divDetalle = $('#solo_detalle');
+        divDetalle.empty();
+        if ($("#id_detalle").prop("checked")) {
+            isComplementoWing = $("#id_complemento_wing").prop("checked");
+            isCerveza = $("#id_cerveza").prop("checked");
+            isEscarcha = $("#id_escarcha").prop("checked");
+            isComplementoCerveza = $("#id_complemento_cerveza").prop("checked");
+            isDrink = $("#id_drink").prop("checked");
+            isComplementoDrink = $("#id_complemento_drink").prop("checked");
+            isCarne = $("#id_carne").prop("checked");
+            isComplementoPan = $("#id_complemento_pan").prop("checked");
+            isRefresco = $("#id_refresco").prop("checked");
+            isSazonador = $("#id_sazonador").prop("checked");
+            
+
+            {% for comple in complementos %}
+                bandera = false;
+                {% if comple.get_tipo_display == 'Complemento WINGS' %}
+                    if (isComplementoWing) {
+                        bandera = true;
+                    }
+                {% elif comple.get_tipo_display == 'Cerveza' %}
+                    if (isCerveza) {
+                        bandera = true;
+                    }
+                {% elif comple.get_tipo_display == 'Escarcha' %}
+                    if (isEscarcha) {
+                        bandera = true;
+                    }
+                {% elif comple.get_tipo_display == 'Complemento cerveza' %}
+                    if (isComplementoCerveza) {
+                        bandera = true;
+                    }
+                {% elif comple.get_tipo_display == 'Drink' %}
+                    if (isDrink) {
+                        bandera = true;
+                    }
+                {% elif comple.get_tipo_display == 'Complemento drink' %}
+                    if (isComplementoDrink) {
+                        bandera = true;
+                    }
+                {% elif comple.get_tipo_display == 'Carnes' %}
+                    if (isCarne) {
+                        bandera = true;
+                    }
+                {% elif comple.get_tipo_display == 'Complemento panes' %}
+                    if (isComplementoPan) {
+                        bandera = true;
+                    }
+                {% elif comple.get_tipo_display == 'Refresco' %}
+                    if (isRefresco) {
+                        bandera = true;
+                    }
+                {% elif comple.get_tipo_display == 'Sazonador' %}
+                    if (isSazonador) {
+                        bandera = true;
+                    }
+                {% endif %}
+                if (bandera) {
+                    nomb = '{{comple.nombre}}';
+                    nombre = nomb.replace(/\s/g, '_');
+                    id_nombre = 'id_' + nombre;
+                    label = $('<label>', { for: id_nombre, text: nomb, class: 'col-5 etiquetas' });
+                    checkbox = $('<input>', { type: 'checkbox', id: id_nombre, name: nombre, class: 'form-check-input1 checkbox-large1' });
+                    $('#solo_detalle').append(label);
+                    $('#solo_detalle').append(checkbox);
+                }
+            {% endfor %}
+        }
+    }
+    $("#id_tipo").change(function () {
+        limpia_detalle();
+        if ($("#id_tipo").val() == '1') {
+            $("#solo_bar").hide();
+            $("#solo_cocina").show();
+        } else {
+            $("#solo_bar").show();
+            $("#solo_cocina").hide();
+        }
+        $('input[type="checkbox"][id="id_detalle"]').prop('checked', false);
+        presenta();
+    });
+    function limpia_detalle() {
+        $('input[type="checkbox"][id="id_cerveza"]').prop('checked', false);
+        $('input[type="checkbox"][id="id_escarcha"]').prop('checked', false);
+        $('input[type="checkbox"][id="id_complemento_cerveza"]').prop('checked', false);
+        $('input[type="checkbox"][id="id_carne"]').prop('checked', false);
+        $('input[type="checkbox"][id="id_sazonador"]').prop('checked', false);
+        $('input[type="checkbox"][id="id_drink"]').prop('checked', false);
+        $('input[type="checkbox"][id="id_complemento_wing"]').prop('checked', false);
+        $('input[type="checkbox"][id="id_complemento_drink"]').prop('checked', false);
+        $('input[type="checkbox"][id="id_complemento_pan"]').prop('checked', false);
+        $('input[type="checkbox"][id="id_refresco"]').prop('checked', false);
+    }
+    $(document).ready(function () {
+        $("#id_precio").css("text-align", "right");
+        $('#id_breve').attr('rows', '3');
+        $('#id_tipo').trigger('change');
+        $("#solo_detalle").hide();
+        if (accion == "Modificación") {
+            if ('{{cerveza}}' == '1') {
+                $('input[type="checkbox"][id="id_cerveza"]').prop('checked', true);
+            }
+            if ('{{escarcha}}' == '1') {
+                $('input[type="checkbox"][id="id_escarcha"]').prop('checked', true);
+            }
+            if ('{{complemento_cerveza}}' == '1') {
+                $('input[type="checkbox"][id="id_complemento_cerveza"]').prop('checked', true);
+            }
+            if ('{{carne}}' == '1') {
+                $('input[type="checkbox"][id="id_carne"]').prop('checked', true);
+            }
+            if ('{{sazona}}' == '1') {
+                $('input[type="checkbox"][id="id_sazonador"]').prop('checked', true);
+            }
+            if ('{{drink}}' == '1') {
+                $('input[type="checkbox"][id="id_drink"]').prop('checked', true);
+            }
+            if ('{{complemento_wing}}' == '1') {
+                $('input[type="checkbox"][id="id_complemento_wing"]').prop('checked', true);
+            }
+            if ('{{complemento_drink}}' == '1') {
+                $('input[type="checkbox"][id="id_complemento_drink"]').prop('checked', true);
+            }
+            if ('{{complemento_pan}}' == '1') {
+                $('input[type="checkbox"][id="id_complemento_pan"]').prop('checked', true);
+            }
+            if ('{{refresco}}' == '1') {
+                $('input[type="checkbox"][id="id_refresco"]').prop('checked', true);
+            }
+            informa = '{{ingredientes}}';
+            var div = document.createElement('div');
+            div.innerHTML = informa;
+            var datos = div.textContent || div.innerText;
+            var arrayDatos = JSON.parse(datos);
+            if (arrayDatos != '') {
+                $('input[type="checkbox"][id="id_detalle"]').prop('checked', true);
+                $('#id_detalle').trigger('change');
+                for (var i = 0; i < arrayDatos.length; i++) {
+                    nomb = arrayDatos[i];
+                    nombre = "id_" + nomb.replace(/\s/g, '_');
+                    $('input[type="checkbox"][id="' + nombre + '"]').prop('checked', true);
+                }
+                $("#solo_detalle").show();
+            }
+        }
+        $("#id_nombre").focus();
+    });
+</script>
+{% endif %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% block headJS %}
+<meta http-equiv="refresh" content="10">
+{% endblock %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block contenido %}
+{% if user.is_authenticated and servicio_perm %}
+<div class="d-flex justify-content-center">
+    {% if servicio_nueva_perm %}
+    <div class="col-5 text-center">
+        <a href="{% url 'comanda' %}" class="btn btn-info cuadro-boton">Nueva comanda</a>
+    </div>
+    {% endif %}
+    <div class="col-4 text-center">
+        <a href="{% url 'index' %}" class="btn btn-info cuadro-boton">Regresar</a>
+    </div>
+</div>
+<div class="d-flex justify-content-center">
+    <div class="col-12 col-xs-12 col-sm-12 col-md-10 col-lg-10 col-xl-8 col-xxl-7 container">
+        <table class="table cuadro caption-top">
+            <caption>
+                <h3>Comandas</h3>
+            </caption>
+            <thead>
+                <tr class="text-center">
+                    <th class="col-2">
+                        Mesa
+                    </th>
+                    <th class="col-4">
+                        Observación
+                    </th>
+                    <th class="col-2">
+                        Importe
+                    </th>
+                    <th class="col-2">
+                        Solicitudes
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mesa in servicio %}
+                <tr>
+                    <td class="text-center">
+                        {% if servicio_solicitar_perm %}
+                        <a href="{% url 'comanda_surte' mesa.id %}" class="btn btn-info cuadro-boton"
+                            title="Detalle de la mesa {{mesa.mesa}}">
+                            {{ mesa.mesa}}
+                        </a>
+                        {% else %}
+                        <a href="#" class="btn btn-info cuadro-boton"
+                            title="Detalle de la mesa {{mesa.mesa}}">
+                            {{ mesa.mesa}}
+                        </a>
+                         {% endif %}
+                    </td>
+                    <td class="align-middle" style="font-size: large;">
+                        {{ mesa.observacion}}
+                    </td>
+                    <td class="text-end align-bottom" style="font-size: large; padding-right: 20px;">
+                        {% if servicio_ver_perm %}
+                        <a href="{% url 'comanda_detalle' mesa.id %}" class="cuadro btn btn-info">
+                            {% if mesa.importe_total is None %}
+                            0
+                            {% else %}
+                            {{ mesa.importe_total}}
+                            {% endif %}
+                        </a>
+                        {% else %}
+                        <a href="#" class="cuadro btn btn-info">
+                            {% if mesa.importe_total is None %}
+                            0
+                            {% else %}
+                            {{ mesa.importe_total}}
+                            {% endif %}
+                        </a>
+                        {% endif %}
+                    </td>
+                    <td class="text-end align-bottom" style="font-size: large; padding-right: 20px;">
+                        <a href="#" class="cuadro btn btn-info">
+                            {% if mesa.producto_total is None %}
+                            0
+                            {% else %}
+                            {{ mesa.producto_total}}
+                            {% endif %}
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

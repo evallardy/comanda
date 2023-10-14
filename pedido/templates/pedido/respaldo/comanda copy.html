@@ -1,0 +1,95 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block contenido %}
+{% if user.is_authenticated %}
+<style>
+    .id-continuar.disabled {
+        opacity: 0.5; /* Reduce la opacidad para indicar que está desactivado */
+        pointer-events: none; /* Evita que se pueda hacer clic en el botón */
+        /* Agrega otros estilos para reflejar visualmente el estado desactivado */
+    }    
+</style>
+<div class="row d-flex justify-content-center">
+    <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+        <h2 class="cuadro">Camanda</h2>
+    </div>
+</div>
+{% endif %}
+<div class="row">
+    <div class="container cuadro col-10 col-xs-9 col-sm-9 col-md-9 col-lg-8 col-xl-7 col-xxl-6">
+        <form method="POST" class="row g-3">
+            {% csrf_token %}
+            <div class="col-4">
+                {{form.mesa|as_crispy_field}}
+                <label style="color: red;" id="error_mesa"></label>
+            </div>
+            <div class="col-12">
+                {{form.observacion|as_crispy_field}}
+            </div>
+            <hr>
+            <div class="row d-flex justify-content-around">
+                <a href="#" class="btn btn-info cuadro-boton col-5" id="id-continuar">Continuar</a>
+                <a href="{% url 'servicio'  %}" class="btn btn-info cuadro-boton col-5">Regresar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $("#id-continuar").addClass("disabled");
+    });
+    
+    $('#id_mesa').on('keyup', function (event) {
+        var id_mesa = $("#id_mesa").val().trim();
+        $('#error_mesa').text('');
+        $("#id-continuar").addClass("disabled");
+        if (id_mesa.length > 0) {
+            $.ajax({
+                url: '/pedido/valida_mesa/',
+                type: 'GET',
+                data: {
+                    id_mesa: id_mesa,
+                },
+                dataType: 'json',
+                success: function (data) {
+                    var existe = data.existe;
+                    if (existe) {
+                        $('#error_mesa').text('La mesa ya existe');
+                    } else {
+                        $("#id-continuar").removeClass("disabled");
+                    }
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    console.log('Error:', errorThrown);
+                }
+            });
+        }
+        $("#id-continuar").on("click", function(event) {
+            event.preventDefault(); // Evita que se siga el enlace al hacer clic
+            if (!$(this).hasClass("disabled")) {
+                // Obtiene los valores de los campos del formulario
+                var mesaVal = $("#id_mesa").val();
+                var observacionVal = $("#id_observacion").val();
+                // Construye la URL con los valores de los campos
+                if (observacionVal == '') {
+                    var url = "{% url 'comanda_nueva' 123 %}";
+                    url = url.replace('123', mesaVal);
+                } else {
+                    var url = "{% url 'comanda_nueva' 123 456 %}";
+                    url = url.replace('123', mesaVal);
+                    url = url.replace('456', observacionVal);
+                }
+                // Redirecciona a la URL construida
+                window.location.href = url;
+            }
+        });
+    });
+</script>
+{% endblock %}

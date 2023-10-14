@@ -1,0 +1,171 @@
+{% extends "core/base.html" %}
+{{ form.media }} 
+{% load static %} 
+{% load crispy_forms_tags %}
+{% block blcss %}
+{% load bootstrap4 %} 
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %} 
+{% endblock %}
+{% block contenido %} 
+{% if user.is_authenticated %} 
+{% if catalogo_agregar_perm or catalogo_modificar_perm %}
+<div class="row d-flex justify-content-center">
+  <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+    <h2 class="cuadro">Producto</h2>
+  </div>
+</div>
+<div class="text-center">
+  <h4 style="color: rgb(11, 125, 231)">{{accion}}</h4>
+  <div class="container cuadro col-11 col-xs-9 col-sm-9 col-md-9 col-lg-8 col-xl-7 col-xxl-6">
+    <form method="POST" class="row g-3" id="formulario">
+      {% csrf_token %}
+      <div class="row d-flex justify-content-around" style="margin-top: 10px">
+        <button type="submit" class="btn btn-info cuadro-boton col-4">
+          Guarda
+        </button>
+        <a href="{% url 'producto_list' %}"
+          class="btn btn-info cuadro-boton col-4">
+          Regresar
+        </a>
+      </div>
+      <div class="col-12">{{form.nombre|as_crispy_field}}</div>
+      <div class="col-4">{{form.tipo|as_crispy_field}}</div>
+      <div class="col-4">{{form.precio|as_crispy_field}}</div>
+      <div class="col-12">{{form.breve|as_crispy_field}}</div>
+      <h3>Contenido</h3>
+      <div class="row">
+        <div class="row col-12 col-xs-11 col-sm-11 col-md-11 col-lg-10 col-xl-9 col-xxl-9"
+          id="seleccionados">
+        </div>
+      </div>
+      <hr>
+      <div class="row">
+        <div class="row col-12 col-xs-11 col-sm-11 col-md-11 col-lg-10 col-xl-9 col-xxl-9">
+          {% for insumo in insumos %}
+          {% ifchanged insumo.grupo %}
+          <div class="col-12 mt-3">
+            <strong>{{ insumo.grupo }}</strong>
+            <button type="button"
+              class="btn btn-secondary"
+              onclick="muestraOculta('grupo-{{ insumo.grupo_id }}')">
+              Mostrar/Ocultar
+            </button>
+          </div>
+          {% endifchanged %}
+          <div class="col-4 mb-3 grupo-{{ insumo.grupo_id }}">
+            <label for="insumo_{{ insumo.id }}">
+              <input
+                class="checkbox-insumo form-check-input checkbox-large"
+                type="checkbox"
+                id="insumo_{{ insumo.id }}"
+                value="{{ insumo.id }}"/>
+              {{ insumo.nombre }}
+            </label>
+          </div>
+          {% if forloop.counter0|divisibleby:3 and not forloop.last %}
+        </div>
+        <div class="row col-12 col-xs-11 col-sm-11 col-md-11 col-lg-10 col-xl-9 col-xxl-9">
+        {% endif %}
+        {% endfor %}
+        </div>
+      </div>
+      <div class="row d-flex justify-content-around">
+        <button type="submit" class="btn btn-info cuadro-boton col-4">
+          Guarda
+        </button>
+        <a href="{% url 'producto_list' %}"
+          class="btn btn-info cuadro-boton col-4">
+          Regresar
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+  var accion = "{{accion}}";
+  $("#id_precio").on("focusout", function () {
+    reformatear("id_precio");
+  });
+  $("#id_precio").on("keypress", function (event) {
+    return valideKey(event);
+  });
+  function muestraOculta(ventana) {
+    grupo = "." + ventana;
+    rango = $(grupo);
+    if (rango.is(":visible")) {
+      rango.hide();
+    } else {
+      rango.show();
+    }
+  }
+</script>
+{% endif %}
+{% endif %}
+{% endblock %}
+
+<script>
+  $(document).ready(function () {
+      {% block inicio %}
+      if (accion = 'Modificación') {
+          {% for producto in producto_insumos %}
+              {% for insumo in producto.insumos %}
+                  checkb = $('#insumo_' + {{insumo.id}});
+                  checkb.prop("checked", true);
+                  cambioCheckbox(checkb);
+                  select = $('#tipo-' + {{insumo.id}});
+                  select.val({{insumo.opcion}});
+              {% endfor %}
+          {% endfor %}
+      }
+      $(".checkbox-insumo").change(function() {
+          cambioCheckbox($(this));
+      });
+
+      function cambioCheckbox (objeto) {
+          // Obtiene el ID y el nombre del insumo
+          var idInsumo = objeto.attr("id");
+          var nombreInsumo = objeto.data("nombre-insumo");
+          var label = objeto.closest("label");
+          var labelText = label.text();
+          var clave = objeto.val();
+          var opciones = {{tipo_solicitud|safe}};
+
+          // Verifica si el checkbox está marcado o desmarcado
+          if (objeto.is(":checked")) {
+              var grupo = $("<div class='col-6 row align-bottom' id='div-" + clave +  "'>");
+              var select = $("<select class='form-select col-12' id='tipo-" + clave + "' name='ntipo-" + clave + "'>");
+
+              opciones.forEach(function(opcion) {
+                  var valor = opcion.key;
+                  var texto = opcion.value;
+                  select.append($('<option>', {
+                      value: valor,
+                      text: texto
+                  }));
+              });
+
+              grupo.append(
+                  "<div class='col-12' style='font-weight: bold;' id='seleccionado-" + clave + "'>"
+                      + labelText
+                      + "</div>"
+              );
+
+              grupo.append(select);
+
+              $("#seleccionados").append(grupo);
+
+          } else {
+              $("#div-" + clave).remove();
+          }
+      }
+
+      $("#id_precio").css("text-align", "right");
+      $('#id_breve').attr('rows', '3');
+      $("#id_nombre").focus();
+      {% for grupo in grupos %}
+          muestraOculta('grupo-{{ grupo.id }}');
+      {% endfor %}
+      {% endblock %}
+  });
+</script>
