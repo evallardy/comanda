@@ -269,7 +269,8 @@ class servicio(LoginRequiredMixin, ListView):
         context['servicio_pagar_perm'] = self.request.user.has_perm('core.servicio_pagar')
         context['servicio_ver_perm'] = self.request.user.has_perm('core.servicio_ver')
         context['servicio_cierra_perm'] = self.request.user.has_perm('core.servicio_cierra')
-        context['paquetes'] = lista_paquetes
+        
+        context['paquetes'] = lista_paquetes  
         context['productos'] = lista_productos
         return context
 
