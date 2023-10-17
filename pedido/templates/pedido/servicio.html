@@ -12,11 +12,10 @@
 {% block contenido %}
 {% if user.is_authenticated and servicio_perm %}
 <div class="d-flex justify-content-center">
-    {% if servicio_nueva_perm and productos and paquetes %}
+    {% if servicio_nueva_perm and lt_productos|length > 0 %}
     <div class="col-5 text-center">
         <a href="{% url 'comanda' %}" class="btn btn-info cuadro-boton">Nueva comanda</a>
     </div>
-    
     {% endif %}
     <div class="col-4 text-center">
         <a href="{% url 'index' %}" class="btn btn-info cuadro-boton">Regresar</a>
