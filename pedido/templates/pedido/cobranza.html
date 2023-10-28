@@ -81,8 +81,8 @@
                                 {% endif %}
                             </td>
                             <td>
-                                {% if servicio_cierra_perm %}
-                                <a href="#" class="btn btn-info" title="Terminada">
+                                {% if servicio_cierra_perm and mesa.por_pagar == 0.00 and mesa.por_entrega_elaborar == 0 %}
+                                <a href="{% url 'cierra' mesa.id %}" class="btn btn-info" title="Terminada">
                                   <img src="{% static 'core/img/atendida.svg' %}" width="20" />
                                 </a>
                                 {% endif %}

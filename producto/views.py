@@ -326,12 +326,14 @@ def lista(request):
     if request.method == "POST":
         clave = request.POST.get("clave")
         lista_componentes = []
+        lista_componentes_cantidad = []
         clave_enviada = clave[3:]
         if clave.startswith("PQ-"):
             paquete = Paquete.objects.filter(id=clave_enviada).first()
             componentes = paquete.componentes
             for componente in componentes:
                 lista_componentes.append(componente['id'])
+                lista_componentes_cantidad.append((componente['id'],componente['cantidad']))
         else:
             lista_componentes.append(clave_enviada)
         productos = Producto.objects.filter(id__in=lista_componentes)
@@ -352,12 +354,17 @@ def lista(request):
                     paquete_especificacion = ''
                     paquete_nombre = ''
                     precio = ''
+                for compo in lista_componentes_cantidad:
+                    if int(compo[0]) == producto.id:
+                        producto_cantidad = int(compo[1])
+                        break
             else:
                 paquete_id = ''
                 tipo = 'Producto'
                 paquete_especificacion = 'Producto'
                 paquete_nombre = ''
                 precio = producto.precio
+                producto_cantidad = 1
             producto_id = producto.id
             producto_nombre = producto.nombre
             producto_insumos = producto.insumos
@@ -370,6 +377,7 @@ def lista(request):
                     'producto_nombre': producto_nombre,
                     'precio': precio,
                     'producto_insumos': producto_insumos,
+                    'producto_cantidad': producto_cantidad
             }
             listado.append(elemento)
 

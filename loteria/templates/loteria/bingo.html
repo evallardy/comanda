@@ -1,0 +1,90 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block headJS %}
+<!-- <meta http-equiv="refresh" content="10">  -->
+{% endblock %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block contenido %}
+<div class="d-flex justify-content-center">
+  <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+    <h2 class="cuadro">Loterias</h2>
+  </div>
+</div>
+<div class="d-flex justify-content-center">
+  <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+      <a href="{% url 'index' %}" class="btn btn-info cuadro-boton">Regresar</a>
+  </div>
+</div>
+<div class="d-flex justify-content-center">
+  <div>
+    {% for bingo in bingos %}
+    <table class="cuadro caption-top">
+      <caption>
+        <h3>Tabla {{ forloop.counter }}</h3>
+      </caption>
+      <thead>
+        <tr class="text-center">
+          <th style="color: white; background-color: red; width: 50px; border-top-left-radius: 10px;">B</th>
+          <th style="color: white; background-color: rgb(99, 130, 235); width: 50px;">I</th>
+          <th style="color: white; background-color: forestgreen; width: 50px;">N</th>
+          <th style="color: white; background-color: coral; width: 50px;">G</th>
+          <th style="color: white; background-color: blueviolet; width: 50px; border-top-right-radius: 10px;">O</th>
+        </tr> 
+      </thead>
+      <tbody>
+        {% for linea in bingo %}
+        <tr class="text-center">
+            {% for numero in linea %}
+              {% if forloop.counter0 == 0 %}
+                <td class="text-center" style="color: red; ">
+                  <div class="cuadro" style="padding: 5px; background-color: lightpink;">
+                    {{ numero }}
+                  </div>
+                </td>
+              {% elif forloop.counter0 == 1 %}
+                <td class="text-center" style="color: rgb(99, 130, 235); ">
+                  <div class="cuadro" style="padding: 5px; background-color: #adcbf7;">
+                    {{ numero }}
+                  </div>
+                </td>
+              {% elif forloop.counter0 == 2 %}
+                <td class="text-center" >
+                  {% if numero == 'FREE' %}
+                  <div class="cuadro" style="padding: 3px; height: 30px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" class="bi bi-star" viewBox="0 0 16 16">
+                      <path fill="red" d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.565.565 0 0 0-.163-.505L1.71 6.745l4.052-.576a.525.525 0 0 0 .393-.288L8 2.223l1.847 3.658a.525.525 0 0 0 .393.288l4.052.575-2.906 2.77a.565.565 0 0 0-.163.506l.694 3.957-3.686-1.894a.503.503 0 0 0-.461 0z"/>
+                    </svg>
+                  </div>
+                  {% else %}
+                  <div class="cuadro" style="padding: 5px; background-color: aquamarine;">
+                    {{ numero }}
+                  </div>
+                  {% endif %}
+                </td>
+              {% elif forloop.counter0 == 3 %}
+                <td class="text-center" style="color: coral; ">
+                  <div class="cuadro" style="padding: 5px; background-color: rgb(243, 209, 176);">
+                    {{ numero }}
+                  </div>
+                </td>
+              {% elif forloop.counter0 == 4 %}
+                <td class="text-center" style="color: blueviolet;">
+                  <div class="cuadro" style="padding: 5px; background-color: rgb(235, 207, 252);">
+                    {{ numero }}
+                  </div>
+                </td>
+              {% endif %}
+            {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

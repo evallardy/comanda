@@ -185,6 +185,7 @@
             </div>
         </div>
         <input type="text" id="contador" hidden>
+        <input type="text" id="contador_general" hidden>
         <input type="text" id="id_pedido" name="pedido" hidden>
     </form>
 </div>
@@ -362,139 +363,146 @@
                 clave: select.val(),
             },
             success: function (response) {
-                var listado = response.listado;
+                var listado = response.listado; 
                 contador_grupo = 0;
                 sw_caja = true;
                 for (var y = 0; y < 1; y++) {
                     sw = 0;
                     for (var i = 0; i < listado.length; i++) {
                         var elemento = listado[i];
+                        var memoria_precio = elemento.precio;
                         valor = parseInt($('#contador').val());
                         numero_tipo = valor + 1;
                         $('#contador').val(numero_tipo);
-                        // Accede a los elementos individuales de la tupla aquí
-                        var paquete_id = elemento.paquete_id;
-                        var tipo = elemento.tipo;
-                        if (elemento.paquete_especificacion != '') {
-                            contador_grupo = numero_tipo;
-                            var paquete_especificacion = elemento.paquete_especificacion;
-                        } else {
-                            var paquete_especificacion = '';
-                        }
-                        var paquete_nombre = elemento.paquete_nombre;
-                        var producto_id = elemento.producto_id;
-                        var producto_nombre = elemento.producto_nombre;
-                        var precio = elemento.precio;
-                        var producto_insumos = elemento.producto_insumos;
-
-                        var nuevoTr = $('<tr class="fila_' + contador_grupo + '">');
-                        var nuevoTd1 = $('<td hidden>').text(paquete_id).addClass('col-1');
-                        var nuevoTd2 = $('<td hidden>').text(tipo).addClass('col-1');
-                        var nuevoTd3 = $('<td hidden>').text(paquete_especificacion).addClass('col-1');
-                        var nuevoTd4 = $('<td hidden>').text(paquete_nombre).addClass('col-1');
-                        var nuevoTd5 = $('<td hidden>').text(producto_id).addClass('col-1');
-                        var nuevoTd6 = $('<td>').text(producto_nombre).addClass('col-1');
-                        var nuevoTd7 = $('<td hidden>').text(cantidad).addClass('col-1');
-
-                        var nuevoTd8 = $('<td>').addClass('col-1');
-
-                        insumos_requeridos = 'insumos_req_' + numero_tipo;
-                        insumos_solicitados = 'insumos_sol_' + numero_tipo;
-
-                        var botonInsumos = $('<button>').addClass('btn btn-warning');
-                        botonInsumos.attr('id', 'boton_req_' + numero_tipo);
-
-                        var imagenInsumos = $('<img>').attr('src', '/static/core/img/insumos.svg');
-                        imagenInsumos.attr('id', 'imagenInsumos' + numero_tipo);
-
-                        botonInsumos.on('click', function () {
-                            requisitos($(this));
-                        });
-                        botonInsumos.append(imagenInsumos);
-                        nuevoTd8.append(botonInsumos);
-
-
-                        var nuevoTd9 = $('<td>').text(precio).addClass('col-1');
-
-                        solicitados = [];
-                        for (var x = 0; x < producto_insumos.length; x++) {
-                            insumo_sol = producto_insumos[x];
-                            sol_id = insumo_sol.id;
-                            sol_opcion = insumo_sol.opcion;
-                            sol_estatus = insumo_sol.estatus;
-                            sol_nombre_grupo = insumo_sol.nombre_grupo;
-                            sol_nombre_insumo = insumo_sol.nombre_insumo;
-                            pedir_bolean = false;
-                            grupo_anterior = '';
-                            if (sol_estatus == 1 && sol_opcion !== '1') {
-                                if (sol_opcion == '3') {
-                                    pedir_bolean = true;
-                                } else {
-                                    if (grupo_anterior != sol_nombre_grupo) {
-                                        grupo_anterior = sol_nombre_grupo;
-                                        pedir_bolean = true;
-                                    }
-                                }
-                                solicitados.push({
-                                    'id': sol_id,
-                                    'opcion': sol_opcion,
-                                    'nombre_grupo': sol_nombre_grupo,
-                                    'nombre_insumo': sol_nombre_insumo,
-                                    'pedir': pedir_bolean
-                                });
+                        for (var e = 0; e < elemento.producto_cantidad; e++) {
+                            valor1 = parseInt($('#contador_general').val());
+                            numero_general = valor1 + 1;
+                            $('#contador_general').val(numero_general);
+                            // Accede a los elementos individuales de la tupla aquí
+                            var paquete_id = elemento.paquete_id;
+                            var tipo = elemento.tipo;
+                            if (elemento.paquete_especificacion != '') {
+                                contador_grupo = numero_tipo;
+                                var paquete_especificacion = elemento.paquete_especificacion;
+                            } else {
+                                var paquete_especificacion = '';
                             }
-                        }
+                            var paquete_nombre = elemento.paquete_nombre;
+                            var producto_id = elemento.producto_id;
+                            var producto_nombre = elemento.producto_nombre;
+                            var precio = memoria_precio;
+                            var producto_insumos = elemento.producto_insumos;
 
-                        var solicitadosJSON = JSON.stringify(solicitados);
+                            var nuevoTr = $('<tr class="fila_' + contador_grupo + '">');
+                            var nuevoTd1 = $('<td hidden>').text(paquete_id).addClass('col-1');
+                            var nuevoTd2 = $('<td hidden>').text(tipo).addClass('col-1');
+                            var nuevoTd3 = $('<td hidden>').text(paquete_especificacion).addClass('col-1');
+                            var nuevoTd4 = $('<td hidden>').text(paquete_nombre).addClass('col-1');
+                            var nuevoTd5 = $('<td hidden>').text(producto_id).addClass('col-1');
+                            var nuevoTd6 = $('<td>').text(producto_nombre).addClass('col-1');
+                            var nuevoTd7 = $('<td hidden>').text(cantidad).addClass('col-1');
 
-                        var nuevoTd10 = $('<td hidden>').text(solicitadosJSON).addClass('col-1');
-                        nuevoTd10.attr('id', insumos_solicitados);
+                            var nuevoTd8 = $('<td>').addClass('col-1');
 
-                        var nuevoTd11 = $('<td hidden>').text(JSON.stringify(producto_insumos)).addClass('col-1');
-                        nuevoTd11.attr('id', insumos_requeridos);
+                            insumos_requeridos = 'insumos_req_' + numero_general;
+                            insumos_solicitados = 'insumos_sol_' + numero_general;
 
+                            var botonInsumos = $('<button>').addClass('btn btn-warning');
+                            botonInsumos.attr('id', 'boton_req_' + numero_general);
 
-                        var nuevoTd12 = $('<td>').addClass('col-1');
+                            var imagenInsumos = $('<img>').attr('src', '/static/core/img/insumos.svg');
+                            imagenInsumos.attr('id', 'imagenInsumos' + numero_general);
 
-                        if (sw == 0) {
-
-                            var imagenEditar = $('<img>').attr('src', '/static/core/img/eliminar.svg');
-                            imagenEditar.attr('id', 'imagenEditar' + numero_tipo);
-
-                            var botonEditar = $('<button id="btn_' + numero_tipo + '">').addClass('btn btn-info');
-                            botonEditar.on('click', function () {
-                                elimina_fila($(this));
+                            botonInsumos.on('click', function () {
+                                requisitos($(this));
                             });
-                            botonEditar.append(imagenEditar);
-                            nuevoTd12.append(botonEditar);
-                            sw = 1;
+                            botonInsumos.append(imagenInsumos);
+                            nuevoTd8.append(botonInsumos);
+
+
+                            var nuevoTd9 = $('<td>').text(precio).addClass('col-1');
+
+                            solicitados = [];
+                            for (var x = 0; x < producto_insumos.length; x++) {
+                                insumo_sol = producto_insumos[x];
+                                sol_id = insumo_sol.id;
+                                sol_opcion = insumo_sol.opcion;
+                                sol_estatus = insumo_sol.estatus;
+                                sol_nombre_grupo = insumo_sol.nombre_grupo;
+                                sol_nombre_insumo = insumo_sol.nombre_insumo;
+                                pedir_bolean = false;
+                                grupo_anterior = '';
+                                if (sol_estatus == 1 && sol_opcion !== '1') {
+                                    if (sol_opcion == '3') {
+                                        pedir_bolean = true;
+                                    } else {
+                                        if (grupo_anterior != sol_nombre_grupo) {
+                                            grupo_anterior = sol_nombre_grupo;
+                                            pedir_bolean = true;
+                                        }
+                                    }
+                                    solicitados.push({
+                                        'id': sol_id,
+                                        'opcion': sol_opcion,
+                                        'nombre_grupo': sol_nombre_grupo,
+                                        'nombre_insumo': sol_nombre_insumo,
+                                        'pedir': pedir_bolean
+                                    });
+                                }
+                            }
+
+                            var solicitadosJSON = JSON.stringify(solicitados);
+
+                            var nuevoTd10 = $('<td hidden>').text(solicitadosJSON).addClass('col-1');
+                            nuevoTd10.attr('id', insumos_solicitados);
+
+                            var nuevoTd11 = $('<td hidden>').text(JSON.stringify(producto_insumos)).addClass('col-1');
+                            nuevoTd11.attr('id', insumos_requeridos);
+
+
+                            var nuevoTd12 = $('<td>').addClass('col-1');
+
+                            if (sw == 0) {
+
+                                var imagenEditar = $('<img>').attr('src', '/static/core/img/eliminar.svg');
+                                imagenEditar.attr('id', 'imagenEditar' + numero_tipo);
+
+                                var botonEditar = $('<button id="btn_' + numero_tipo + '">').addClass('btn btn-info');
+                                botonEditar.on('click', function () {
+                                    elimina_fila($(this));
+                                });
+                                botonEditar.append(imagenEditar);
+                                nuevoTd12.append(botonEditar);
+                                sw = 1;
+                            }
+
+                            nuevoTr.append(nuevoTd1);
+                            nuevoTr.append(nuevoTd2);
+                            nuevoTr.append(nuevoTd3);
+                            nuevoTr.append(nuevoTd4);
+                            nuevoTr.append(nuevoTd5);
+                            nuevoTr.append(nuevoTd6);
+                            nuevoTr.append(nuevoTd7);
+                            nuevoTr.append(nuevoTd8);
+                            nuevoTr.append(nuevoTd9);
+                            nuevoTr.append(nuevoTd10);
+                            nuevoTr.append(nuevoTd11);
+                            nuevoTr.append(nuevoTd12);
+
+                            var nuevoTd13 = '';
+                            if (sw_caja) {
+                                nuevoTd13 = $('<td hidden>').text('Caja');
+                                sw_caja = false;
+                            } else {
+                                nuevoTd13 = $('<td>').text('');
+                            }
+                            nuevoTd13.attr('id', 'cobra_caja_' + numero_tipo);
+                            
+                            nuevoTr.append(nuevoTd13);
+
+                            tabla.append(nuevoTr);
+                            memoria_precio = '';
                         }
-
-                        nuevoTr.append(nuevoTd1);
-                        nuevoTr.append(nuevoTd2);
-                        nuevoTr.append(nuevoTd3);
-                        nuevoTr.append(nuevoTd4);
-                        nuevoTr.append(nuevoTd5);
-                        nuevoTr.append(nuevoTd6);
-                        nuevoTr.append(nuevoTd7);
-                        nuevoTr.append(nuevoTd8);
-                        nuevoTr.append(nuevoTd9);
-                        nuevoTr.append(nuevoTd10);
-                        nuevoTr.append(nuevoTd11);
-                        nuevoTr.append(nuevoTd12);
-
-                        var nuevoTd13 = '';
-                        if (sw_caja) {
-                            nuevoTd13 = $('<td hidden>').text('Caja');
-                            sw_caja = false;
-                        } else {
-                            nuevoTd13 = $('<td>').text('');
-                        }
-                        nuevoTd13.attr('id', 'cobra_caja_' + numero_tipo);
-                        
-                        nuevoTr.append(nuevoTd13);
-
-                        tabla.append(nuevoTr);
                     }
                 }
                 valida_datos();
@@ -641,6 +649,7 @@
     $(document).ready(function () {
         valida_datos();
         $("#contador").val(0);
+        $("#contador_general").val(0);
     });
 </script>
 {% endif %}

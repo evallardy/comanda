@@ -1,0 +1,73 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block headJS %}
+<!-- <meta http-equiv="refresh" content="10">  -->
+{% endblock %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block contenido %}
+<div class="d-flex justify-content-center">
+  <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+    <h2 class="cuadro">Loterias</h2>
+  </div>
+</div>
+<div class="d-flex justify-content-center">
+  <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
+      <a href="{% url 'index' %}" class="btn btn-info cuadro-boton">Regresar</a>
+  </div>
+</div>
+<div class="d-flex justify-content-center">
+  <div class="cuadro col-12 col-xs-11 col-sm-10 col-md-10 col-lg-9 col-xl-8 col-xxl-8">
+    <table class="table table-striped caption-top col-12" id="tabla-entrega">
+      <caption>
+        <h3>Tablas</h3>
+      </caption>
+      <thead>
+        <tr class="text-center">
+          <th>#</th>
+          <th>1</th>
+          <th>2</th>
+          <th>3</th>
+          <th>4</th>
+          <th>5</th>
+          <th>6</th>
+          <th>7</th>
+          <th>8</th>
+          <th>9</th>
+          <th>10</th>
+          <th>11</th>
+          <th>12</th>
+          <th>13</th>
+          <th>14</th>
+          <th>15</th>
+          <th>16</th>
+          <th>17</th>
+          <th>18</th>
+          <th>19</th>
+          <th>20</th>
+          <th>21</th>
+          <th>22</th>
+          <th>23</th>
+          <th>24</th>
+        </tr> 
+      </thead>
+      <tbody>
+        {% for loteria in loterias %}
+        <tr class="text-center">
+          <td class="text-center">{{ forloop.counter }}</td>
+          {% for carta in loteria %}
+          <td class="text-center">
+              {{ carta }}<br>
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

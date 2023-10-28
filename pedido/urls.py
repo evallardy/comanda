@@ -28,6 +28,7 @@ urlpatterns = [
     path('reasignar_producto/<id_comanda>/<id_producto>/', reasignar_producto, name='reasignar_producto'),
     path('pago_comanda/<str:pk>/', pago_comanda.as_view(), name='pago_comanda'),
     path('pago_productos/', pago_productos, name='pago_productos'),
+    path('cierra/<pk>/', cierra, name='cierra'),
     
 
 #    path('comanda_nueva/<str:mesa>/<str:observacion>/', comanda_nueva.as_view(), name='comanda_nueva'),

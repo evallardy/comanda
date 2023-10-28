@@ -1,0 +1,39 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block headJS %}
+<!-- <meta http-equiv="refresh" content="10">  -->
+<title>Sorteo de Bingo</title>
+<script>
+    function actualizarNumeros() {
+        $.ajax({
+            url: "{% url 'obtener_numeros_bingo' %}",
+            success: function(data) {
+                $('#numeros-bingo').empty();
+                for (var i = 0; i < data.numeros.length; i++) {
+                    $('#numeros-bingo').append('<li>' + data.numeros[i] + '</li>');
+                }
+            }
+        });
+    }
+    setInterval(actualizarNumeros, 3000); // Actualizar cada 3 segundos
+</script>
+{% endblock %}
+{% block blcss %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+{% endblock %}
+{% block contenido %}
+    <h1>Sorteo de Bingo</h1>
+    <p>Números extraídos:</p>
+    <ul id="numeros-bingo">
+        {% for sorteo in sorteos %}
+            <li>{{ sorteo.numero }}</li>
+        {% endfor %}
+    </ul>
+    <form action="{% url 'extraer_numero_bingo' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Extraer Número</button>
+    </form>
+</html>

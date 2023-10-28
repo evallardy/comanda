@@ -27,7 +27,6 @@ class Comanda(models.Model):
         verbose_name = 'Comanda'
         verbose_name_plural = 'Comandas'
         ordering = ['-fecha_alta',]
-        unique_together = ['mesa', 'fecha_contable']
         db_table = 'Comanda'
 
     def __str__(self):
@@ -46,6 +45,7 @@ class Caja(models.Model, PermissionRequiredMixin):
     usuario_cobra = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="UsuarioCajaCobra", null=True, blank=True)
     usuario_cancela = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="UsuarioCajaCancela", null=True, blank=True)
     descripcion_cancela = models.CharField("Descripción", max_length=255, null=True, blank=True)
+    pago = models.ManyToManyField('Pago')
     fecha_contable = models.DateField("Fecha Contable", default=default_fecha_contable)
     fecha_modificacion = models.DateTimeField("Fecha modificación", auto_now=True)
     fecha_alta = models.DateTimeField("Fecha alta", auto_now_add=True)
@@ -59,6 +59,18 @@ class Caja(models.Model, PermissionRequiredMixin):
     def __str__(self):
         return ' %s, %s, %s, %s' % (self.comanda, self.descripcion, self.importe, dict(ACTIVO_DETALLE).get(self.estatus))
 
+class Pago(models.Model, PermissionRequiredMixin):
+    importe_efectivo = models.DecimalField("Importe", max_digits=10, decimal_places=2, default=0)
+    importe_tarjeta = models.DecimalField("Importe", max_digits=10, decimal_places=2, default=0)
+    importe_transferencia = models.DecimalField("Importe", max_digits=10, decimal_places=2, default=0)
+    fecha_modificacion = models.DateTimeField("Fecha modificación", auto_now=True)
+    fecha_alta = models.DateTimeField("Fecha alta", auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Pago'
+        verbose_name_plural = 'Pagos'
+        ordering = ['-fecha_alta',]
+        db_table = 'Pago'
 
 class Detalle(models.Model, PermissionRequiredMixin):
     caja = models.ForeignKey(Caja, on_delete=models.CASCADE, verbose_name="Caja")

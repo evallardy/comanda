@@ -26,28 +26,47 @@
             <a href="{% url 'cobranza' %}" class="btn btn-info cuadro-boton">Regresar</a>
         </div>
     </div>
-    <div class="row d-flex justify-content-center" style="padding-top: 25px; font-size: 20px; font-weight: bold;">
-        <div class="col-4 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
-            Por pagar<br>
-            <input type="text" id="por_pagar" readonly class="text-center no-border col-10" style="font-weight: bold; box-shadow: 0 0 10px #000;
-                border-radius: 10px;" value='{{importe_por_pagar|default_if_none:"0.00"}}'>
-        </div>
-        <div class="col-4 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
-            Pagado<br>
-            <input type="text" id="pagado" readonly class="text-center no-border col-10" style="font-weight: bold; box-shadow: 0 0 10px #000;
-                border-radius: 10px;" value='{{importe_pagado|default_if_none:"0.00"}}'>
-        </div>
-        <br><br>
-        <div class="col-4 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
-            <button type="button" class="btn btn-info cuadro-pago" title="Paga" id="btnEnviar">
-                <img src="{% static 'core/img/pago.svg' %}" width="20" height="20" />
-            </button>
-            <input type="text" id="pagar" readonly class="text-center no-border col-10" style="font-weight: bold; box-shadow: 0 0 10px #000;
-                border-radius: 10px;" value="0.00">
+    <div class="row d-flex justify-content-center" style="padding-top: 25px; font-size: 16px; font-weight: bold;">
+        <div class="row col-11 col-xs-8 col-sm-8 col-md-5 col-lg-5 col-xl-5 col-xxl-4 text-center">
+            <div class="col-4 col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4 col-xxl-4 text-center">
+                Por pagar<br>
+                <input type="text" id="por_pagar" readonly class="text-end no-border col-10" style="font-weight: bold; box-shadow: 0 0 10px #000;
+                    border-radius: 10px;" value='{{importe_por_pagar|default_if_none:"0.00"}}'>
+                <hr>
+                <div class="text-end">
+                    <label style="font-size: 15px;">Efectivo</label> <br>
+                    <label style="font-size: 15px;">Tarjeta</label> <br>
+                    <label style="font-size: 15px;">Transferencia</label>
+                </div>
+            </div>
+            <div class="col-4 col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4 col-xxl-4 text-center">
+                Pagado<br>
+                <input type="text" id="pagado" readonly class="text-end no-border col-10" style="font-weight: bold; box-shadow: 0 0 10px #000;
+                    border-radius: 10px;" value='{{importe_pagado|default_if_none:"0.00"}}'>
+                <hr>
+                <input type="text" id="efectivo_pagar" class="text-end no-border col-10" style="font-weight: bold; box-shadow: 0 0 10px #000;
+                border-radius: 10px;" value="0.00" onfocusout="reformatear('efectivo_pagar')" onkeypress="return valideKey(event);">
+                <input type="text" id="tarjeta_pagar" class="text-end no-border col-10" style="font-weight: bold; box-shadow: 0 0 10px #000;
+                border-radius: 10px;" value="0.00" onfocusout="reformatear('tarjeta_pagar')" onkeypress="return valideKey(event);">
+                <input type="text" id="transferencia_pagar" class="text-end no-border col-10" style="font-weight: bold; box-shadow: 0 0 10px #000;
+                border-radius: 10px;" value="0.00" onfocusout="reformatear('transferencia_pagar')" onkeypress="return valideKey(event);">
+            </div>
+            <div class="col-4 col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xl-4 col-xxl-4 text-center">
+                <button type="button" class="btn btn-info cuadro-pago" title="Paga" id="btnEnviar">
+                    <img src="{% static 'core/img/pago.svg' %}" width="20" height="20" />
+                </button>
+                <input type="text" id="pagar" readonly class="text-end no-border col-10" style="font-weight: bold; box-shadow: 0 0 10px #000;
+                    border-radius: 10px;" value="0.00">
+                <hr>
+                <label style="font-size: 15px;">Suma</label> <br>
+                <label style="font-size: 15px;">Total</label> <br>
+                <input type="text" id="total_pagar" class="text-end no-border col-10" style="font-weight: bold; box-shadow: 0 0 10px #000;
+                border-radius: 10px;" value="0.00" readonly>
+            </div>
         </div>
     </div>
     <div class="d-flex justify-content-center">
-        <div class="col-11 col-xs-11 col-sm-11 col-md-9 col-lg-9 col-xl-7 col-xxl-6">
+        <div class="col-11 col-xs-10 col-sm-9 col-md-8 col-lg-7 col-xl-5 col-xxl-4">
             <table class="table table-striped cuadro caption-top">
                 <caption>
                     <h3>Comanda de la mesa - {{ mesa_id }}</h3>
@@ -98,6 +117,9 @@
 </form>
 <script>
     $(document).ready(function () {
+        $("#btnEnviar").addClass("disabled");
+//        $("#btnEnviar").removeClass("disabled"); 
+        
         $(".checkbox-pago").change(function () {
             var totalImporte = 0;
             $(".checkbox-pago:checked").each(function () {
@@ -114,6 +136,36 @@
 
         var checkboxesPagos = $('input[type="checkbox"][id^="id_pago_"]');
 
+        $('#efectivo_pagar').on('keyup', function () {
+            valida_importes();
+        });
+        $('#tarjeta_pagar').on('keyup', function () {
+            valida_importes();
+        });
+        $('#transferencia_pagar').on('keyup', function () {
+            valida_importes();
+        });
+
+        function valida_importes() {
+            var pagar = parseFloat($('#pagar').val().replaceAll(',', ''));
+            var importe_efectivo = parseFloat($('#efectivo_pagar').val().replaceAll(',',''));
+            var importe_tarjeta = parseFloat($('#tarjeta_pagar').val().replaceAll(',',''));
+            var importe_transferencia = parseFloat($('#transferencia_pagar').val().replaceAll(',',''));
+            pagado = importe_efectivo + importe_tarjeta + importe_transferencia;
+            $('#total_pagar').val(pagado);
+            reformatear('total_pagar');
+            var totalPagar = $('#total_pagar').val();
+            if (isNaN(parseFloat(totalPagar))) {
+                $('#total_pagar').val(0);
+            }
+            if ($('#total_pagar').val())
+            if ((pagar > 0) && (pagado == pagar)) {
+                $("#btnEnviar").removeClass("disabled");
+            } else {
+                $("#btnEnviar").addClass("disabled");
+            }
+        }
+
         // Evento change en el checkbox principal
         $('#id_selecciona').on('change', function () {
             var isChecked = $(this).prop('checked');
@@ -126,11 +178,17 @@
             $('.checkbox-pago:checked').each(function () {
                 var id = $(this).attr('id');
                 var valor = $(this).prop('checked') ? 'on' : 'off';
+                var importe_efectivo = $('#efectivo_pagar').val();
+                var importe_tarjeta = $('#tarjeta_pagar').val();
+                var importe_transferencia = $('#transferencia_pagar').val();
 
                 if (valor == 'on') {
                     datos.push({
                         id: id,
-                        valor: valor
+                        valor: valor,
+                        importe_efectivo: importe_efectivo,
+                        importe_tarjeta: importe_tarjeta,
+                        importe_transferencia: importe_tarjeta,
                     });
                 }
             });

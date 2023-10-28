@@ -1,3 +1,5 @@
+import locale
+from decimal import Decimal
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.views.generic import ListView, CreateView, UpdateView, TemplateView, FormView
@@ -21,9 +23,9 @@ import json
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponseNotAllowed
 
-from .models import *
+from pedido.models import *
 from core.models import Contable
-from .forms import *
+from pedido.forms import *
 from core.views import fecha_contable_activa
 from producto.models import *
 from producto.views import lista_productos, lista_paquetes
@@ -33,6 +35,14 @@ def update_comanda_status(request):
     if request.method == 'POST' and request.is_ajax():
         comanda_id = request.POST.get('comanda_id')
         return JsonResponse({'success': True})
+    else:
+        return JsonResponse({'success': False})
+
+@login_required
+def cierra(request, pk):
+    if request.method == 'GET':
+        comanda = Comanda.objects.filter(id=pk).update(estatus=3)
+        return redirect('cobranza')
     else:
         return JsonResponse({'success': False})
 
@@ -179,11 +189,24 @@ def pago_productos(request):
         datos = json.loads(request.POST.get('datos'))
         with transaction.atomic():
             for dato in datos:
+                importe_efectivo = Decimal(dato['importe_efectivo'].replace(",", ""))
+                importe_tarjeta = Decimal(dato['importe_tarjeta'].replace(",", ""))
+                importe_transferencia = Decimal(dato['importe_transferencia'].replace(",", ""))
+                pago = Pago.objects.create(
+                    importe_efectivo = importe_efectivo,
+                    importe_tarjeta = importe_tarjeta,
+                    importe_transferencia = importe_transferencia,
+                )
+                break
+            pago.save()
+            for dato in datos:
                 id_pago = dato['id']
                 valor = dato['valor']
                 registro_id = id_pago.split('_')[-1]
                 caja = Caja.objects.filter(id=registro_id) \
                     .update(estatus=2, usuario_cobra=request.user)
+                caja_actualizada = Caja.objects.get(id=registro_id)
+                caja_actualizada.pago.add(pago)
                 detalle = Detalle.objects.filter(caja_id=registro_id) \
                     .update(estatus=4, usuario_cobra=request.user)
     return HttpResponseRedirect(reverse_lazy('index'))
@@ -210,7 +233,7 @@ class servicio(LoginRequiredMixin, ListView):
     def get_queryset(self):
         fecha_contable = fecha_contable_activa(self)
         queryset1 = Comanda.objects.filter( 
-            estatus__in=[1, 2, 3], 
+            estatus__in=[1, 2], 
             fecha_contable=fecha_contable 
         ).annotate( 
             importe_total=Sum('caja__importe', filter=Q(caja__estatus__in=[1, 2, 3, 4])), 
@@ -218,7 +241,7 @@ class servicio(LoginRequiredMixin, ListView):
             producto_cancelado=Count('caja', filter=Q(caja__estatus=1000)),
         )
         queryset2 = Comanda.objects.filter(
-            estatus__in=[1, 2, 3],
+            estatus__in=[1, 2],
             fecha_contable=fecha_contable
         ).annotate(
             importe_total=Count('caja', filter=Q(caja__estatus=1000)),
@@ -483,7 +506,7 @@ class valida_mesa(LoginRequiredMixin, View):
     def get(self, request):
         id_mesa = request.GET.get('id_mesa')
         fecha_contable = fecha_contable_activa(self)
-        mesa = Comanda.objects.filter(mesa=id_mesa, fecha_contable=fecha_contable).first()
+        mesa = Comanda.objects.filter(mesa=id_mesa, fecha_contable=fecha_contable, estatus__in=[1,2]).first()
         if mesa:
             existe = True
         else:
@@ -702,7 +725,7 @@ class cobranza(LoginRequiredMixin, ListView):
     def get_queryset(self):
         fecha_contable = fecha_contable_activa(self)
         queryset = Comanda.objects \
-            .filter(fecha_contable=fecha_contable) \
+            .filter(fecha_contable=fecha_contable, estatus__in=[1,2]) \
             .annotate( \
                 por_pagar=(Coalesce(Sum('caja__importe', filter=Q(caja__detalle__estatus=3)), \
                 0.00, output_field=FloatField()) - \
@@ -710,8 +733,9 @@ class cobranza(LoginRequiredMixin, ListView):
                 0.00, output_field=FloatField())), \
                 pagado=(Sum('caja__importe', filter=Q(caja__estatus=2))), \
                 por_pagar_real=(Sum('caja__importe', filter=Q(caja__estatus=1))), \
+                por_entrega_elaborar=(Count('caja__detalle', filter=Q(caja__detalle__estatus__in=[1,2])))
         )
-        comandas = Comanda.objects.filter(fecha_contable=fecha_contable) \
+        comandas = Comanda.objects.filter(fecha_contable=fecha_contable, estatus__in=[1,2]) \
             .order_by('fecha_alta')
         datos_ok = []
         for comanda in comandas:
@@ -720,10 +744,12 @@ class cobranza(LoginRequiredMixin, ListView):
                 'mesa' : comanda.mesa,
                 'observacion' : comanda.observacion,
                 'pagado' : 0,
-                'por_pagar' : 0
+                'por_pagar' : 0,
+                'por_entrega_elaborar' : 0
             }
             cajas = Caja.objects.filter(comanda_id=comanda.id) \
                 .order_by('comanda_id')
+            por_entregar = 0
             for caja in cajas:
                 detalles = Detalle.objects.filter(caja_id=caja.id) \
                     .order_by('caja_id')
@@ -732,6 +758,7 @@ class cobranza(LoginRequiredMixin, ListView):
                 b_pagado = False
                 for detalle in detalles:
                     if detalle.estatus in [1,2]:
+                        por_entregar += 1
                         b_por_entregar = True
                     if detalle.estatus == 3:
                         b_entregado = True
@@ -741,6 +768,7 @@ class cobranza(LoginRequiredMixin, ListView):
                     registro['pagado'] += caja.importe
                 elif not b_por_entregar and b_entregado:
                     registro['por_pagar'] += caja.importe
+            registro['por_entrega_elaborar'] += por_entregar
             datos_ok.append(registro)
         queryset = datos_ok 
         return queryset
