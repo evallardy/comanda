@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.views.generic import ListView, CreateView, UpdateView
 from django.views.generic.edit import FormView
@@ -39,7 +40,7 @@ class GrupoCreateView(LoginRequiredMixin, CreateView):
         context['catalogo_agregar_perm'] = self.request.user.has_perm('core.catalogo_agregar')
         context['accion'] = 'Alta'
         return context
-        
+       
 class GrupoUpdateView(LoginRequiredMixin, UpdateView):
     model = Grupo
     form_class = GrupoForm
@@ -67,7 +68,6 @@ def existencia_grupo(request):
         "error": "Método no permitido"
     }
     return JsonResponse(data, status=405)
-
 class InsumoListView(LoginRequiredMixin, ListView):
     model = Insumo
     template_name = 'producto/insumo_list.html'
@@ -86,7 +86,6 @@ class InsumoListView(LoginRequiredMixin, ListView):
         pk = self.kwargs.get('pk', '0')
         queryset = Insumo.objects.filter(grupo=pk)
         return queryset
-
 class InsumoCreateView(LoginRequiredMixin, CreateView):
     model = Insumo
     form_class = InsumoForm
@@ -107,7 +106,6 @@ class InsumoCreateView(LoginRequiredMixin, CreateView):
         pk1 = self.kwargs.get('pk1')
         nombre = self.kwargs.get('nombre')
         return reverse('insumo_list', kwargs={'pk': pk1, 'nombre': nombre})
-
 class InsumoEditView(LoginRequiredMixin, UpdateView):
     model = Insumo
     form_class = InsumoForm
@@ -295,6 +293,14 @@ class mod_producto(LoginRequiredMixin, UpdateView):
         producto_insumos.save()
 
         return HttpResponseRedirect(reverse('producto_list'))
+
+@login_required
+def elimina_producto(request, pk):
+    if request.method == 'GET':
+        Producto.objects.filter(id=pk).delete()
+    return HttpResponseRedirect(reverse_lazy('producto_list'))
+
+
 
 def existencia_producto(request):
     if request.method == "POST":
