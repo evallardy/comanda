@@ -25,7 +25,7 @@ class GrupoForm(forms.ModelForm):
 class InsumoForm(forms.ModelForm):
     class Meta:
         model = Insumo
-        fields = ['grupo', 'nombre', 'estatus']
+        fields = ['grupo', 'nombre', 'precio', 'estatus']
 
 class ProductoForm(forms.ModelForm):
 
@@ -44,7 +44,6 @@ class ProductoForm(forms.ModelForm):
         widgets = {
             'nombre':forms.TextInput(),
             'breve':forms.Textarea(),
-            'precio': forms.TextInput(attrs={'input': '99,999,999.99'}),
         }
 
     def __init__(self, *args, **kwargs):

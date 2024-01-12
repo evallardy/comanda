@@ -752,7 +752,7 @@ class cobranza(LoginRequiredMixin, ListView):
             por_entregar = 0
             for caja in cajas:
                 detalles = Detalle.objects.filter(caja_id=caja.id) \
-                    .order_by('caja_id')
+                    .order_by('caja_id') 
                 b_por_entregar = False
                 b_entregado = False
                 b_pagado = False
@@ -1032,13 +1032,13 @@ def detalle_x_grupo(valor_estatus, valor_tipo):
     fecha_contable = fecha_contable_activa(0)
     if valor_tipo == 0:
         detalle = Detalle.objects \
-            .filter(fecha_contable=fecha_contable, estatus=valor_estatus) \
+            .filter(fecha_contable=fecha_contable, estatus=valor_estatus, caja__comanda__estatus__in=[1,2]) \
             .order_by('fecha_alta')
     else:
         detalle = Detalle.objects \
             .filter(fecha_contable=fecha_contable, 
                     estatus=valor_estatus, 
-                    producto__tipo=valor_tipo) \
+                    producto__tipo=valor_tipo, caja__comanda__estatus__in=[1,2]) \
             .order_by('fecha_alta')
     queryset1 = Detalle.objects \
     .filter(fecha_contable=fecha_contable) \

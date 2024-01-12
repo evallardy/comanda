@@ -31,6 +31,7 @@
                     <thead>
                         <tr>
                             <th class="col-5 text-center">Nombre</th>
+                            <th class="col-2 text-center">precio</th>
                             <th class="col-1 text-center">Existe</th>
                             <th class="col-1"></th>
                         </tr>
@@ -39,6 +40,7 @@
                         {% for insumo in insumos %}
                         <tr>
                             <td class="align-middle">{{ insumo.nombre }}</td>
+                            <td class="align-middle text-end">{{ insumo.precio }}</td>
                             <td class="align-middle text-center">
                                 <input type="checkbox" name="existe_{{ insumo.id }}" id="id_existe_{{ insumo.id }}" 
                                     {%if insumo.estatus %} checked {% endif %}

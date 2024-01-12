@@ -26,6 +26,7 @@ class Insumo(models.Model, PermissionRequiredMixin):
     nombre = models.CharField("Nombre", max_length=255)
     estatus = models.IntegerField("Estatus", choices=ACTIVO_PRODUCTO, default=1)
     imagen = models.IntegerField("Imagen insumo.", null=True, blank=True)
+    precio = models.DecimalField("Precio", max_digits=10, decimal_places=2, default=0)
     fecha_modificacion = models.DateTimeField("Fecha modificación", auto_now=True)
     fecha_alta = models.DateTimeField("Fecha alta", auto_now_add=True)
 

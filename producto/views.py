@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.views.generic import ListView, CreateView, UpdateView
 from django.views.generic.edit import FormView
 from django.http.response import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
 from django.http import JsonResponse
 from django.db import transaction
@@ -110,18 +110,34 @@ class InsumoEditView(LoginRequiredMixin, UpdateView):
     model = Insumo
     form_class = InsumoForm
     template_name = 'producto/insumo_form.html'
+    success_url = '/ruta_por_defecto/'
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         pk1 = self.kwargs.get('pk1')
+        pk = self.kwargs.get('pk')
         nombre = self.kwargs.get('nombre')
         context['pk1'] = pk1
+        context['registro'] = Insumo.objects.filter(id=pk).first()
         context['nombre'] = nombre
         context['accion'] = 'Edita'
         return context
     def get_success_url(self):
-        pk1 = self.kwargs.get('pk1')
-        nombre = self.kwargs.get('nombre')
-        return reverse('insumo_list', kwargs={'pk': pk1, 'nombre': nombre})
+        pk1 = int(self.kwargs.get('pk1'))
+        nombre1 = self.kwargs.get('nombre')
+        return reverse('insumo_list', kwargs={'pk': pk1, 'nombre': nombre1})
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object
+        pk1 = int(self.kwargs.get('pk1'))
+        nombre1 = self.kwargs.get('nombre')
+        pk = self.kwargs.get('pk',0)
+        insumo = self.model.objects.get(id=pk)
+        form = self.form_class(request.POST, request.FILES, instance=insumo)
+        nombre = request.POST.get('nombre')
+        precio = request.POST.get('precio').replace(',','')
+        Insumo.objects.filter(id=pk).update(nombre=nombre, precio=precio)
+        success_url = self.get_success_url()
+        return redirect(success_url)
+
 
 def existencia_insumo(request):
     if request.method == "POST":
