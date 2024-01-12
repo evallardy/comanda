@@ -861,7 +861,7 @@ def cancela_pedido(request, id, tipo_pago):
                 Caja.objects.filter(id=caja_id).update(estatus=0, usuario_cancela=request.User)
         except Exception as e:
             print("Excepción:", str(e))
-    url = reverse('comanda_ver', args=(comanda_id, tipo_pago))
+    url = reverse('comanda_ver', args=(comanda_id, tipo_pago, ))
     return redirect(url)
 
 @login_required
@@ -893,7 +893,7 @@ def cancela_producto(request, id):
                 Caja.objects.filter(id=caja_id).update(cantidad=cantidad, 
                     importe=importe, usuario_cancela_id=request.user, 
                     estatus=0)
-        url = reverse('comanda_detalle', args=(comanda_id))
+        url = reverse('comanda_detalle', args=(comanda_id,))
         return redirect(url)
     else:
         url = reverse('index')
