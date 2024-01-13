@@ -300,7 +300,7 @@ class servicio(LoginRequiredMixin, ListView):
 class comanda(LoginRequiredMixin, FormView):
     model = Comanda
     form_class = ComandaForm    
-    template_name = 'pedido/comanda.html'
+    template_name = 'pedido/comanda_new.html'
     def get_context_data(self, **kwargs):
         context = super(comanda, self).get_context_data(**kwargs)
         fecha_contable = fecha_contable_activa(self)
@@ -427,7 +427,7 @@ class comanda_nueva(LoginRequiredMixin, CreateView):
 class comanda_surte(LoginRequiredMixin, FormView):
     model = Comanda
     form_class = ComandaForm    
-    template_name = 'pedido/comanda_surte.html'
+    template_name = 'pedido/comanda_new_sol.html'
     def get_context_data(self, **kwargs):
         context = super(comanda_surte, self).get_context_data(**kwargs)
         pk = self.kwargs.get('pk')
