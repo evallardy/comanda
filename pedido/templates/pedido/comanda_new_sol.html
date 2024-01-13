@@ -147,13 +147,13 @@
                 <div class="row col-12 d-flex align-items-center justify-content-center" style="margin-left: 2px;">
                 {% for p in producto_cmb %}
                     <button type="button" class="btn btn-success cuadro-boton col-4" onclick="agregar_seleccion('PD-{{ p.id }}')"
-                        id="agregar" style="height: 60px;">
+                        id="agregar" style="height: 90px;">
                         {{ p.nombre }}
                     </button>
                 {% endfor %}
                 {% for p in paquete_cmb %}
                     <button type="button" class="btn btn-success cuadro-boton col-4" onclick="agregar_seleccion('PQ-{{ p.id }}')"
-                        id="agregar" style="height: 60px;">
+                        id="agregar" style="height: 90px;">
                         {{ p.get_tipo_display }} - {{ p.nombre }}
                     </button>
                 {% endfor %}
