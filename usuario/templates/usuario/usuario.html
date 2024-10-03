@@ -11,7 +11,7 @@
 {% if modifica_usuario_perm %}
 <div class="row d-flex justify-content-center">
     <div class="col-6 col-xs-5 col-sm-5 col-md-5 col-lg-3 col-xl-3 col-xxl-2 text-center">
-        <h2 class="cuadro">Usuario</h2>
+        <h3 class="cuadro">Usuario <strong>{{ usuario }}</strong></h3>
     </div>
 </div>
 <div>
@@ -45,6 +45,9 @@
             </div>
             <div class="col-12">
                 {{form.email|as_crispy_field}}
+            </div>
+            <div class="col-12">
+                {{form.password|as_crispy_field}}
             </div>
             <hr>
             <div class="row d-flex justify-content-around">

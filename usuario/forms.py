@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from django.forms import PasswordInput
 
 from .models import Usuario
 
@@ -34,10 +35,15 @@ class UsuarioForm(UserCreationForm):
 class UsuarioFormEdit(forms.ModelForm):
     cliente = forms.BooleanField(widget=forms.CheckboxInput, label='')
     is_active = forms.BooleanField(widget=forms.CheckboxInput, label='')
+    password = forms.CharField(
+        widget=PasswordInput(attrs={'autocomplete': 'new-password'}),
+        required=False,
+        label='Nueva Contraseña'
+    )
 
     class Meta:
         model = Usuario
-        fields = ['first_name', 'last_name', 'cliente', 'celular', 'email', 'is_active']
+        fields = ['first_name', 'last_name', 'cliente', 'celular', 'email', 'is_active', 'password']
         labels = {
             'first_name': 'Nombre',
             'last_name': 'Apellidos',

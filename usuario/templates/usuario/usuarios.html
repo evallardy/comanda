@@ -29,15 +29,16 @@
             <thead>
                 <tr class="text-center">
                     <th class="col-4">Nombre</th>
-                    <th class="col-4">Correo</th>
-                    <th class="col-3">Celular</th>
+                    <th class="col-2">Usuario</th>
+                    <th class="col-3">Correo</th>
+                    <th class="col-2">Celular</th>
                     <th class="col-1"></th>
                 </tr>
             </thead>
             <tbody>
                 {% for user in usuarios %}
                 <tr>
-                    <td>
+                    <td class="align-middle">
                         {% if modifica_usuario_perm %}
                         <a href="{% url 'mod_usuario' user.id %}" style="text-decoration: none; font-weight: bold; font-style: italic;">
                         {{ user.first_name }} {{ user.last_name }}
@@ -48,10 +49,11 @@
                         </a>    
                         {% endif %}
                     </td>
-                    <td>{{ user.email|default_if_none:"" }}</td>
-                    <td>{{ user.celular|default_if_none:"" }}</td>
-                    <td>
-                        <input class="form-check-input" type="checkbox" {% if user.cliente %}checked{% endif %} disabled>
+                    <td class="text-center align-middle">{{ user.username }}</td>
+                    <td class="text-center align-middle">{{ user.email|default_if_none:"" }}</td>
+                    <td class="text-center align-middle">{{ user.celular|default_if_none:"" }}</td>
+                    <td class="align-middle">
+                        <input class="form-check-input" type="checkbox" {% if user.cliente %}checked{% endif %} disable>
                     </td>
                 </tr>
                 {% endfor %}

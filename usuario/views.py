@@ -1,11 +1,12 @@
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
 from django.contrib.auth.forms import UserCreationForm
-from django.views.generic import ListView, CreateView, UpdateView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.views.generic.edit import UpdateView
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import update_session_auth_hash
 
 from usuario.models import Usuario
 from .forms import UsuarioForm, UsuarioFormEdit
@@ -32,10 +33,47 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
     form_class = UsuarioFormEdit
     template_name = 'usuario/usuario.html'
     success_url = reverse_lazy('usuarios')  # URL de éxito después de guardar
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        pk = self.kwargs.get('pk', '0')
+        usuario_sel = Usuario.objects.filter(id=pk).first()
+        usuario = usuario_sel.username
         context['modifica_usuario_perm'] = self.request.user.has_perm('core.modifica_usuario')
+        context['usuario'] = usuario
         return context
+
+    def post(self, request, *args, **kwargs):
+        # Intentar obtener el usuario a actualizar
+        user = self.get_object()  # Obtén el usuario a actualizar
+
+        # Obtener los datos del formulario manualmente
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        celular = request.POST.get('celular')
+        email = request.POST.get('email')
+        cliente = request.POST.get('cliente') == 'on'  # Checkbox devuelve 'on' o None
+        is_active = request.POST.get('is_active') == 'on'  # Checkbox devuelve 'on' o None
+        password = request.POST.get('password')
+
+        # Actualizar los campos del usuario en la base de datos
+        Usuario.objects.filter(id=user.id).update(
+            first_name=first_name,
+            last_name=last_name,
+            celular=celular,
+            email=email,
+            cliente=cliente,
+            is_active=is_active,
+        )
+
+        # Actualizar la contraseña solo si se proporciona un nuevo valor
+        if password:
+            user.set_password(password)  # Establece la nueva contraseña
+            update_session_auth_hash(request, user)  # Mantiene la sesión activa
+
+        user.save()  # Guarda el usuario para que se aplique la nueva contraseña
+
+        return HttpResponseRedirect(reverse('usuarios'))
 
 @login_required
 def registro(request):
